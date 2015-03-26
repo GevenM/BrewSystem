@@ -12,7 +12,7 @@
 
 class HeatingElement{
 public:
-	HeatingElement( uint8_t , bool = false );
+	HeatingElement( uint8_t pin, uint8_t line );
 	
 	void Activate();
 	void Deactivate();
@@ -20,8 +20,10 @@ public:
 	
 private:	
 	const uint8_t outputPin;
+	const uint8_t assignedPowerLine;
 	bool outputStatus; 
 	
+	static bool powerLineStatus[3];
 };
 
 

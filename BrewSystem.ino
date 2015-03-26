@@ -1,6 +1,6 @@
 #include "TempSensor.h"
 #include "Recipe.h"
-//#include "HeatingElements.h"
+#include "HeatingElement.h"
 #include <string.h>
 #include <SPI.h>
 #include <SD.h>
@@ -17,10 +17,19 @@ OneWire  ds( ONE_WIRE_PIN );  // (a 4.7K resistor is necessary)
 
 TempSensor tempSensor[3];
 
+HeatingElement boilElement1(23, 0);
+HeatingElement boilElement2(25, 1);
+HeatingElement boilElement3(27, 2);
+HeatingElement mashElement(29, 2);
+HeatingElement hltElement1(31, 0);
+HeatingElement hltElement2(33, 1);
+HeatingElement hltElement3(35, 2);
+
 uint8_t addr1[8] = {0x28, 0xA3, 0xEF, 0x5C, 0x6, 0x0, 0x0, 0xB5};
 uint8_t addr2[8] = {0x28, 0xED, 0x3A, 0x5D, 0x6, 0x0, 0x0, 0xD0};
 uint8_t addr3[8] = {0x28, 0x93, 0x31, 0x5D, 0x6, 0x0, 0x0, 0x2B};
 	
+
 
 // Enter a MAC address and IP address for your controller below.
 // The IP address will be dependent on your local network:
