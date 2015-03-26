@@ -1,7 +1,0 @@
-// 
-// 
-// 
-
-#include "HeatingElements.h"
-
-

@@ -10,7 +10,7 @@
 #endif
 
 #define k_nameLength 20
-
+	
 typedef char y_name[k_nameLength];
 typedef short y_time;
 typedef short y_amount;

@@ -22,11 +22,14 @@ public:
 	char *GetName();
 	static int GetNumberOfSensors();
 	
+	bool IsPresent();
+	void SetPresence( bool present );
+	
 private:
 	float temperature;
 	byte address[8];
 	char *name;
-	bool present;
+	bool isPresent;
 	
 	static int numberOfSensors;
 };

@@ -54,3 +54,11 @@ TempSensor::~TempSensor(){
 	delete [] name;
 	numberOfSensors--;
 }
+
+void TempSensor::SetPresence( bool present ){
+	isPresent = present;
+}
+
+bool TempSensor::IsPresent(){
+	return isPresent;	
+}
