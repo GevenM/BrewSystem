@@ -22,17 +22,19 @@ HeatingElement::HeatingElement( uint8_t pin, uint8_t line )
 // Activates the pin that the heating element is on only if there is no other heating element on that power line on. 
 void HeatingElement::Activate(){
 	if ( powerLineStatus[ assignedPowerLine ] == false){
-		outputStatus = true;
 		powerLineStatus[ assignedPowerLine ] = true;
+		outputStatus = true;
 		digitalWrite( outputPin, HIGH);
 	}
 }
 
 // Deactivates the pin that the heating element is on.
 void HeatingElement::Deactivate(){
-	outputStatus = false;
-	powerLineStatus[ assignedPowerLine ] = false;
-	digitalWrite( outputPin, LOW);
+	if ( IsActive() ){
+		powerLineStatus[ assignedPowerLine ] = false;
+		outputStatus = false;
+		digitalWrite( outputPin, LOW);
+	}
 }
 
 // Returns true if the heating element is on.

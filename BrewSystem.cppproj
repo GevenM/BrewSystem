@@ -575,10 +575,10 @@ vmresolved.tools.path=C:\Program Files (x86)\Arduino\hardware\tools\avr
     <Folder Include="Visual Micro\" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="HeatingElements.c">
+    <Compile Include="HeatingElement.cpp">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="HeatingElements.h">
+    <Compile Include="HeatingElement.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="Recipe.c">

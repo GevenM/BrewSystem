@@ -1,3 +1,4 @@
+#include "Selector.h"
 #include "TempSensor.h"
 #include "Recipe.h"
 #include "HeatingElement.h"
@@ -17,13 +18,28 @@ OneWire  ds( ONE_WIRE_PIN );  // (a 4.7K resistor is necessary)
 
 TempSensor tempSensor[3];
 
-HeatingElement boilElement1(23, 0);
-HeatingElement boilElement2(25, 1);
-HeatingElement boilElement3(27, 2);
-HeatingElement mashElement(29, 2);
-HeatingElement hltElement1(31, 0);
-HeatingElement hltElement2(33, 1);
-HeatingElement hltElement3(35, 2);
+HeatingElement c_boilElement1(23, 0);
+HeatingElement c_boilElement2(25, 1);
+HeatingElement c_boilElement3(27, 2);
+HeatingElement c_mashElement(29, 2);
+HeatingElement c_hltElement1(31, 0);
+HeatingElement c_hltElement2(33, 1);
+HeatingElement c_hltElement3(35, 2);
+
+Selector m_sw_emergency( 14 );
+Selector m_sw_power ( 15 );
+Selector m_sw_alarm ( 49 );
+Selector m_sw_boil( 38 );
+Selector m_sw_mash( 40 );
+Selector m_sw_hlt( 42 );
+Selector m_sw_wortPump( 44 );
+Selector m_sw_waterPump( 46 );
+Selector m_sw_glycolPump( 48 );
+Selector m_sw_transferPump( 39 );
+Selector m_sw_outlet110( 41 );
+Selector m_sw_outlet240( 43 );
+
+
 
 uint8_t addr1[8] = {0x28, 0xA3, 0xEF, 0x5C, 0x6, 0x0, 0x0, 0xB5};
 uint8_t addr2[8] = {0x28, 0xED, 0x3A, 0x5D, 0x6, 0x0, 0x0, 0xD0};
@@ -58,6 +74,11 @@ void setup() {
 	tempSensor[2].SetAddress(addr3);
 	tempSensor[2].SetName("HLT");
 		
+	pinMode( 22, INPUT );
+	pinMode( 24, INPUT );
+	digitalWrite( 22, HIGH );
+	digitalWrite( 24, HIGH );
+	
 	Serial.begin(9600);
 	
 	Timer1.initialize(1000000); // initialized at 1 sec
@@ -85,6 +106,30 @@ void setup() {
 
 void loop()
 {
+
+	if( m_boilSwitch.IsOn() ){
+		if( !c_boilElement1.IsActive()){
+			Serial.println("Boil activate");
+			c_boilElement1.Activate();
+		}
+	} else if ( c_boilElement1.IsActive() ){
+		c_boilElement1.Deactivate();
+		Serial.println("Boil deactivate");
+	}
+	
+	
+	if( m_hltSwitch.IsOn() ){
+		if( !c_hltElement1.IsActive()){
+			Serial.println("hlt activate");
+			c_hltElement1.Activate();
+		}
+	} else if (c_hltElement1.IsActive() ){ 
+		c_hltElement1.Deactivate();
+		Serial.println("hlt deactivate");
+	}
+	
+
+		
 	// listen for incoming clients
 	EthernetClient client = server.available();
 	if (client) {
