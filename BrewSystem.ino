@@ -93,13 +93,13 @@ Adafruit_7segment c_mainDisplay = Adafruit_7segment();
 TempSensor tempSensor[3]; // Array holding all the temperature sensors (so that they can be read sequentially using a loop)
 
 // temperature sensors by name so that they can be addressed in a non confusing way.
-TempSensor * m_temp_boil = &tempSensor[0];
+TempSensor * m_temp_hlt = &tempSensor[0];
 TempSensor * m_temp_mash = &tempSensor[1];
-TempSensor * m_temp_hlt = &tempSensor[2];
+TempSensor * m_temp_boil = &tempSensor[2];
 
 
 // Known addresses of sensors
-uint8_t addr1[8] = {0x28, 0xA3, 0xEF, 0x5C, 0x6, 0x0, 0x0, 0xB5};
+uint8_t addr1[8] = {0x28, 0x52, 0x01, 0x6F, 0x6, 0x0, 0x0, 0x48};
 uint8_t addr2[8] = {0x28, 0xED, 0x3A, 0x5D, 0x6, 0x0, 0x0, 0xD0};
 uint8_t addr3[8] = {0x28, 0x93, 0x31, 0x5D, 0x6, 0x0, 0x0, 0x2B};
 
