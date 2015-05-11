@@ -13,12 +13,16 @@ class MomentaryInput{
 	public:
 	MomentaryInput( uint8_t pin );
 	
-	bool IsPressed();
+	bool LongPressed();
+	bool ShortPressed();
+	long LastPressTime();
 	
 	private:
+	bool IsPressed();
 	const uint8_t inputPin;
+	long initialPressTime;
+	long lastPressTime;
 };
 
 
 #endif
-

@@ -6,6 +6,7 @@
 #include "HeatingElement.h"
 #include "SimpleActuator.h"
 
+
 #include <string.h>
 #include <SPI.h>
 #include <SD.h>
@@ -55,6 +56,22 @@ bool M_brewStartReq = false;
 float f_hltSetpoint = 0;
 float recipe_strikeTemp = 76.0;
 float hltTempRange = 2;
+
+typedef enum{
+	e_menuScreen_Idle,
+	e_menuScreen_Temp,
+	e_menuScreen_Temp_HLT,
+	e_menuScreen_Temp_Mash,
+	e_menuScreen_Temp_Boil,
+	e_menuScreen_Temp_HLT_Set,
+	e_menuScreen_Temp_Mash_Set,
+	e_menuScreen_Temp_Boil_Set,
+	e_menuScreen_Emergency,
+	e_menuScreen_Standby,
+	} y_menuScreen;
+y_menuScreen c_menuScreen = e_menuScreen_Idle;
+
+
 
 /************************* HARDWARE LAYER ***************************/
 
@@ -180,6 +197,10 @@ void ReadTemperatureSensors();
 void SetTempResolution( OneWire myds );
 void UpdateTempSensor( TempSensor * sensor );
 void InitDisplays();
+void UpdateMenu();
+void WriteMenu();
+void UpdateMonitoredVariables();
+
 /************************************************************************************/
 
 
@@ -244,7 +265,7 @@ bool AllEquipmentSwitchesOff(){
 			m_sw_hlt.IsOff() &&
 			m_sw_wortPump.IsOff() &&
 			m_sw_waterPump.IsOff() &&
-			m_sw_glycolPump.IsOff() &&
+			//m_sw_glycolPump.IsOff() &&
 			m_sw_transferPump.IsOff() &&
 			m_sw_outlet110.IsOff() &&
 			m_sw_outlet240.IsOff() ) {
@@ -253,7 +274,7 @@ bool AllEquipmentSwitchesOff(){
 	return false;
 }
 
-void UpdatePowerStatus(){
+void UpdateSystemStatus(){
 	if ( c_sysStatus == e_sysStatus_Standby ){
 		if ( m_sw_emergency.IsOn() ){
 			if ( m_sw_power.IsOn() ){
@@ -303,24 +324,26 @@ void HLTControlTemp(){
 	if( hltPIDOutput < pidWindowSize/3 ){
 		if( (hltPIDOutput * 3) < millis() - pidWindowStartTime){
 			c_hltElement1.Activate();
-			} else {
+		} else {
 			c_hltElement1.Deactivate();
 		}
-		} else if ( hltPIDOutput < pidWindowSize/3*2 ){
+		
+	} else if ( hltPIDOutput < pidWindowSize/3*2 ){
 		c_hltElement1.Activate();
 		
 		if( ( (hltPIDOutput - pidWindowSize/3) * 3) < millis() - pidWindowStartTime){
 			c_hltElement2.Activate();
-			} else {
+		} else {
 			c_hltElement2.Deactivate();
 		}
-		} else {
+		
+	} else {
 		c_hltElement1.Activate();
 		c_hltElement2.Activate();
 		
 		if( ( (hltPIDOutput - pidWindowSize/3*2) * 3) < millis() - pidWindowStartTime){
 			c_hltElement3.Activate();
-			} else {
+		} else {
 			c_hltElement3.Deactivate();
 		}
 	}
@@ -422,10 +445,19 @@ void UpdateMash(){
 
 void loop()
 {
+	UpdateMenu();
+	WriteMenu();
+	
 	// update pids with current input values and perform computation. 
 	hltPIDInput = m_temp_hlt->GetTemp();
 	hltPID.Compute();
-
+	
+	//mashPIDInput = m_temp_mash->GetTemp();
+	//mashPID.Compute();
+		
+//	boilPIDInput = m_temp_boil->GetTemp();
+//	boilPID.Compute();
+			
 	// Check if the relay window needs to be shifted
 	if(millis() - pidWindowStartTime > pidWindowSize) { 
 		pidWindowStartTime += pidWindowSize;
@@ -433,7 +465,7 @@ void loop()
 						
 	  
 	// Power status Check
-	//UpdatePowerStatus();
+	UpdateSystemStatus();
 	//UpdateHLT();
 	//UpdateMash();
 	//UpdateBoil();
@@ -474,25 +506,14 @@ void loop()
 	
 	//------
 	
-	if( m_sw_emergency.IsOff() ){
-		// MAIN QUADS
-		c_mainQuadDisplay1.writeDigitAscii(0, 'W');
-		c_mainQuadDisplay1.writeDigitAscii(1, 'E');
-		c_mainQuadDisplay1.writeDigitAscii(2, 'L');
-		c_mainQuadDisplay1.writeDigitAscii(3, 'C');
-		c_mainQuadDisplay2.writeDigitAscii(0, 'O');
-		c_mainQuadDisplay2.writeDigitAscii(1, 'M');
-		c_mainQuadDisplay2.writeDigitAscii(2, 'E');
-		c_mainQuadDisplay2.writeDigitAscii(3, ' ');
-		
+	if( c_sysStatus = e_sysStatus_Ready ){
+
 		// HLT SWITCH ON
 		if( m_sw_hlt.IsOn() ){
-			// ACTIVATE ELEMENTS
-			c_hltElement1.Activate();
-			c_hltElement2.Activate();
-			c_hltElement3.Activate();
-		
-			// set every digit to the buffer
+			
+			HLTControlTemp();
+			
+			// write temperature
 			int val = int((m_temp_hlt->GetTemp() * 10) + 0.5) ;
 		
 			if ( val < 100 ){
@@ -501,51 +522,47 @@ void loop()
 				c_hltDisplay.writeDigitAscii(2, val/10 + 48, true );
 				c_hltDisplay.writeDigitAscii(3, val%10 + 48 );
 
-			
 			} else if ( val < 1000 ){
 				c_hltDisplay.writeDigitAscii(0, ' ');
 				c_hltDisplay.writeDigitAscii(1, val/100 + 48 );
 				c_hltDisplay.writeDigitAscii(2, (val%100)/10 + 48, true );
 				c_hltDisplay.writeDigitAscii(3, val%10 + 48 );
 
-		
 			} else if ( val < 10000 ){
 				c_hltDisplay.writeDigitAscii(0, val/1000 + 48 );
 				c_hltDisplay.writeDigitAscii(1, (val%1000)/100 + 48 );
 				c_hltDisplay.writeDigitAscii(2, (val%100)/10 + 48, true );
 				c_hltDisplay.writeDigitAscii(3, val%10 + 48 );
-
 			}
 
 		} else {
-			//DEACTIVATE ELEMENTS
-			c_hltElement1.Deactivate();
-			c_hltElement2.Deactivate();
-			c_hltElement3.Deactivate();
-		
-		// set every digit to the buffer
-			c_hltDisplay.writeDigitAscii(0, 'H');
-			c_hltDisplay.writeDigitAscii(1, 'L');
-			c_hltDisplay.writeDigitAscii(2, 'T');
-			c_hltDisplay.writeDigitAscii(3, ' ');
+			HLTTurnOff();
+
+		// write idle
+			c_hltDisplay.writeDigitAscii(0, 'I');
+			c_hltDisplay.writeDigitAscii(1, 'D');
+			c_hltDisplay.writeDigitAscii(2, 'L');
+			c_hltDisplay.writeDigitAscii(3, 'E');
 
 		}
 	
 		// BOIL SWITCH ON
 		if( m_sw_boil.IsOn() ){
+			
+			
 			// ACTIVATE ELEMENTS
 			c_boilElement1.Activate();
 			c_boilElement2.Activate();
 			c_boilElement3.Activate();
 		
-			// set every digit to the buffer
+			// write temperature
 			int val = int((m_temp_boil->GetTemp() * 10) + 0.5) ;
 		
 			if ( val < 100 ){
 				c_boilDisplay.writeDigitAscii(0, ' ');
 				c_boilDisplay.writeDigitAscii(1, ' ');
-				c_boilDisplay.writeDigitAscii(2, val/10 + 48, true );
-				c_boilDisplay.writeDigitAscii(3, val%10 + 48 );
+				c_boilDisplay.writeDigitAscii(1, val/10 + 48, true );
+				c_boilDisplay.writeDigitAscii(2, val%10 + 48 );
 
 			
 				} else if ( val < 1000 ){
@@ -564,16 +581,15 @@ void loop()
 			}
 
 			} else {
-			//DEACTIVATE ELEMENTS
-			c_boilElement1.Deactivate();
-			c_boilElement2.Deactivate();
-			c_boilElement3.Deactivate();
+				
+				c_boilElement1.Deactivate();
+				c_boilElement2.Deactivate();
+				c_boilElement3.Deactivate();
 		
-			// set every digit to the buffer
-			c_boilDisplay.writeDigitAscii(0, 'B');
-			c_boilDisplay.writeDigitAscii(1, 'O');
-			c_boilDisplay.writeDigitAscii(2, 'I');
-			c_boilDisplay.writeDigitAscii(3, 'L');
+				c_boilDisplay.writeDigitAscii(0, 'I');
+				c_boilDisplay.writeDigitAscii(1, 'D');
+				c_boilDisplay.writeDigitAscii(2, 'L');
+				c_boilDisplay.writeDigitAscii(3, 'E');
 
 		}
 	
@@ -611,10 +627,10 @@ void loop()
 			c_mashElement.Deactivate();
 		
 			// set every digit to the buffer
-			c_mashDisplay.writeDigitAscii(0, 'M');
-			c_mashDisplay.writeDigitAscii(1, 'A');
-			c_mashDisplay.writeDigitAscii(2, 'S');
-			c_mashDisplay.writeDigitAscii(3, 'H');
+			c_mashDisplay.writeDigitAscii(0, 'I');
+			c_mashDisplay.writeDigitAscii(1, 'D');
+			c_mashDisplay.writeDigitAscii(2, 'L');
+			c_mashDisplay.writeDigitAscii(3, 'E');
 		}
 	
 		// WATER PUMP SWITCH ON
@@ -673,17 +689,6 @@ void loop()
 		c_transferPump.Deactivate();
 		c_outlet240.Deactivate();
 		c_outlet110.Deactivate();
-		
-		
-		// MAIN QUADS
-		c_mainQuadDisplay1.writeDigitAscii(0, 'E');
-		c_mainQuadDisplay1.writeDigitAscii(1, '-');
-		c_mainQuadDisplay1.writeDigitAscii(2, 'S');
-		c_mainQuadDisplay1.writeDigitAscii(3, 'T');
-		c_mainQuadDisplay2.writeDigitAscii(0, 'O');
-		c_mainQuadDisplay2.writeDigitAscii(1, 'P');
-		c_mainQuadDisplay2.writeDigitAscii(2, ' ');
-		c_mainQuadDisplay2.writeDigitAscii(3, ' ');
 		
 		// HLT
 		c_hltDisplay.writeDigitAscii(0, 'I');
@@ -805,7 +810,7 @@ void InitDisplays(){
 	c_mainQuadDisplay2.writeDigitAscii(3, '!');
 	
 	// MAIN TIMER
-	c_mainDisplay.println( 0000 );
+	c_mainDisplay.println( 1111 );
 	c_mainDisplay.drawColon( true );
 	
 	// write it out!
@@ -832,8 +837,6 @@ void ISR_TempTimer( ){
 	c_hltDisplay.writeDisplay();
 	c_mashDisplay.writeDisplay();
 	c_boilDisplay.writeDisplay();
-	c_mainQuadDisplay1.writeDisplay();
-	c_mainQuadDisplay2.writeDisplay();
 	c_mainDisplay.writeDisplay();
 }
 
@@ -964,3 +967,286 @@ void UpdateTempSensor( TempSensor * sensor ){
 	ds.reset();
 
 }
+
+
+void UpdateMenu(){
+	switch( c_sysStatus ){
+	case e_sysStatus_Ready:
+	
+		switch( c_menuScreen ){
+		case e_menuScreen_Idle:
+			if( m_btn_menuLeft.ShortPressed() ) c_menuScreen = e_menuScreen_Temp;
+			else if( m_btn_menuRight.ShortPressed() ) ;//NC
+			else if( m_btn_menuLeft.LongPressed() ) ;//NC
+			else if( m_btn_menuRight.LongPressed() ) ;//NC
+			break;
+		
+		case e_menuScreen_Temp:
+			if( m_btn_menuRight.ShortPressed() ) ;//NC
+			else if( m_btn_menuLeft.ShortPressed() ) ;//NC
+			else if( m_btn_menuRight.LongPressed() ) c_menuScreen = e_menuScreen_Temp_HLT ;
+			else if( m_btn_menuLeft.LongPressed() ) ;//NC
+			else if( abs(millis() - m_btn_menuLeft.LastPressTime()) > 10000 && abs(millis() - m_btn_menuRight.LastPressTime()) > 10000 ) c_menuScreen = e_menuScreen_Idle;
+			break;
+		
+		case e_menuScreen_Temp_HLT:
+			if( m_btn_menuRight.ShortPressed() ) c_menuScreen = e_menuScreen_Temp_Mash;
+			else if( m_btn_menuLeft.ShortPressed() ) c_menuScreen = e_menuScreen_Temp_Boil;
+			else if( m_btn_menuRight.LongPressed() ) c_menuScreen = e_menuScreen_Temp_HLT_Set;
+			else if( m_btn_menuLeft.LongPressed() ) c_menuScreen = e_menuScreen_Temp;
+			else if( abs(millis() - m_btn_menuLeft.LastPressTime()) > 10000 && abs(millis() - m_btn_menuRight.LastPressTime()) > 10000 ) c_menuScreen = e_menuScreen_Idle;
+			break;
+			
+		case e_menuScreen_Temp_Mash:
+			if( m_btn_menuRight.ShortPressed() ) c_menuScreen = e_menuScreen_Temp_Boil;
+			else if( m_btn_menuLeft.ShortPressed() ) c_menuScreen = e_menuScreen_Temp_HLT;
+			else if( m_btn_menuRight.LongPressed() ) c_menuScreen = e_menuScreen_Temp_Mash_Set;
+			else if( m_btn_menuLeft.LongPressed() ) c_menuScreen = e_menuScreen_Temp;
+			else if( abs(millis() - m_btn_menuLeft.LastPressTime()) > 10000 && abs(millis() - m_btn_menuRight.LastPressTime()) > 10000 ) c_menuScreen = e_menuScreen_Idle;
+			break;
+			
+		case e_menuScreen_Temp_Boil:
+			if( m_btn_menuRight.ShortPressed() ) c_menuScreen = e_menuScreen_Temp_HLT;
+			else if( m_btn_menuLeft.ShortPressed() ) c_menuScreen = e_menuScreen_Temp_Mash;
+			else if( m_btn_menuRight.LongPressed() ) c_menuScreen = e_menuScreen_Temp_Boil_Set;
+			else if( m_btn_menuLeft.LongPressed() ) c_menuScreen = e_menuScreen_Temp;
+			else if( abs(millis() - m_btn_menuLeft.LastPressTime()) > 10000 && abs(millis() - m_btn_menuRight.LastPressTime()) > 10000 ) c_menuScreen = e_menuScreen_Idle;
+			break;
+			
+		case e_menuScreen_Temp_HLT_Set:
+			if( m_btn_menuRight.ShortPressed() ) hltPIDSetpoint++; 
+			else if( m_btn_menuLeft.ShortPressed() ) hltPIDSetpoint--;
+			else if( m_btn_menuRight.LongPressed() ) ; //NC
+			else if( m_btn_menuLeft.LongPressed() ) c_menuScreen = e_menuScreen_Temp;
+			else if( abs(millis() - m_btn_menuLeft.LastPressTime()) > 10000 && abs(millis() - m_btn_menuRight.LastPressTime()) > 10000 ) c_menuScreen = e_menuScreen_Idle;
+			break;	
+			
+		case e_menuScreen_Temp_Mash_Set:
+			if( m_btn_menuRight.ShortPressed() ) mashPIDSetpoint++;
+			else if( m_btn_menuLeft.ShortPressed() ) mashPIDSetpoint--;
+			else if( m_btn_menuRight.LongPressed() ) ; //NC
+			else if( m_btn_menuLeft.LongPressed() ) c_menuScreen = e_menuScreen_Temp;
+			else if( abs(millis() - m_btn_menuLeft.LastPressTime()) > 10000 && abs(millis() - m_btn_menuRight.LastPressTime()) > 10000 ) c_menuScreen = e_menuScreen_Idle;
+			break;
+		
+		case e_menuScreen_Temp_Boil_Set:
+			if( m_btn_menuRight.ShortPressed() ) boilPIDOutput++;
+			else if( m_btn_menuLeft.ShortPressed() ) boilPIDSetpoint--;
+			else if( m_btn_menuRight.LongPressed() ) ; //NC
+			else if( m_btn_menuLeft.LongPressed() ) c_menuScreen = e_menuScreen_Temp;
+			else if( abs(millis() - m_btn_menuLeft.LastPressTime()) > 10000 && abs(millis() - m_btn_menuRight.LastPressTime()) > 10000 ) c_menuScreen = e_menuScreen_Idle;
+			break;
+	
+		default:
+			c_menuScreen = e_menuScreen_Idle;	
+		}
+		break;
+	
+	
+	case e_sysStatus_Emergency:
+		c_menuScreen = e_menuScreen_Emergency;
+		break;
+		
+	
+	case e_sysStatus_Standby:
+		c_menuScreen = e_menuScreen_Standby;
+		break;
+	
+	default: break;
+	}
+}
+
+void WriteMenu(){
+	int val = 0;
+	
+	switch( c_menuScreen ){
+		case e_menuScreen_Idle:
+			c_mainQuadDisplay1.writeDigitAscii(0, 'R');
+			c_mainQuadDisplay1.writeDigitAscii(1, 'E');
+			c_mainQuadDisplay1.writeDigitAscii(2, 'A');
+			c_mainQuadDisplay1.writeDigitAscii(3, 'D');
+			c_mainQuadDisplay2.writeDigitAscii(0, 'Y');
+			c_mainQuadDisplay2.writeDigitAscii(1, ' ');
+			c_mainQuadDisplay2.writeDigitAscii(2, ' ');
+			c_mainQuadDisplay2.writeDigitAscii(3, ' ');
+			break;
+			
+			
+		case e_menuScreen_Temp:
+			c_mainQuadDisplay1.writeDigitAscii(0, 'T');
+			c_mainQuadDisplay1.writeDigitAscii(1, 'E');
+			c_mainQuadDisplay1.writeDigitAscii(2, 'M');
+			c_mainQuadDisplay1.writeDigitAscii(3, 'P');
+			c_mainQuadDisplay2.writeDigitAscii(0, 'S');
+			c_mainQuadDisplay2.writeDigitAscii(1, ' ');
+			c_mainQuadDisplay2.writeDigitAscii(2, ' ');
+			c_mainQuadDisplay2.writeDigitAscii(3, ' ');
+			break;
+			
+			
+		case e_menuScreen_Temp_HLT:
+			c_mainQuadDisplay1.writeDigitAscii(0, 'H');
+			c_mainQuadDisplay1.writeDigitAscii(1, 'L');
+			c_mainQuadDisplay1.writeDigitAscii(2, 'T');
+			c_mainQuadDisplay1.writeDigitAscii(3, ' ');
+			c_mainQuadDisplay2.writeDigitAscii(0, ' ');
+			c_mainQuadDisplay2.writeDigitAscii(1, ' ');
+			c_mainQuadDisplay2.writeDigitAscii(2, ' ');
+			c_mainQuadDisplay2.writeDigitAscii(3, ' ');
+			break;
+			
+			
+		case e_menuScreen_Temp_Mash:
+			c_mainQuadDisplay1.writeDigitAscii(0, 'M');
+			c_mainQuadDisplay1.writeDigitAscii(1, 'A');
+			c_mainQuadDisplay1.writeDigitAscii(2, 'S');
+			c_mainQuadDisplay1.writeDigitAscii(3, 'H');
+			c_mainQuadDisplay2.writeDigitAscii(0, ' ');
+			c_mainQuadDisplay2.writeDigitAscii(1, ' ');
+			c_mainQuadDisplay2.writeDigitAscii(2, ' ');
+			c_mainQuadDisplay2.writeDigitAscii(3, ' ');
+			break;
+			
+			
+		case e_menuScreen_Temp_Boil:
+			c_mainQuadDisplay1.writeDigitAscii(0, 'B');
+			c_mainQuadDisplay1.writeDigitAscii(1, 'O');
+			c_mainQuadDisplay1.writeDigitAscii(2, 'I');
+			c_mainQuadDisplay1.writeDigitAscii(3, 'L');
+			c_mainQuadDisplay2.writeDigitAscii(0, ' ');
+			c_mainQuadDisplay2.writeDigitAscii(1, ' ');
+			c_mainQuadDisplay2.writeDigitAscii(2, ' ');
+			c_mainQuadDisplay2.writeDigitAscii(3, ' ');
+			break;
+			
+			
+		case e_menuScreen_Temp_HLT_Set:
+			c_mainQuadDisplay1.writeDigitAscii(0, 'H');
+			c_mainQuadDisplay1.writeDigitAscii(1, 'L');
+			c_mainQuadDisplay1.writeDigitAscii(2, 'T');
+			c_mainQuadDisplay1.writeDigitAscii(3, ':');			
+			
+			// write out the setpoint
+			val = int((hltPIDSetpoint * 10) + 0.5) ;
+
+			if ( val < 100 ){
+				c_mainQuadDisplay2.writeDigitAscii(0, ' ');
+				c_mainQuadDisplay2.writeDigitAscii(1, ' ');
+				c_mainQuadDisplay2.writeDigitAscii(2, val/10 + 48, true );
+				c_mainQuadDisplay2.writeDigitAscii(3, val%10 + 48 );
+
+			} else if ( val < 1000 ){
+				c_mainQuadDisplay2.writeDigitAscii(0, ' ');
+				c_mainQuadDisplay2.writeDigitAscii(1, val/100 + 48 );
+				c_mainQuadDisplay2.writeDigitAscii(2, (val%100)/10 + 48, true );
+				c_mainQuadDisplay2.writeDigitAscii(3, val%10 + 48 );
+		
+			} else if ( val < 10000 ){
+				c_mainQuadDisplay2.writeDigitAscii(0, val/1000 + 48 );
+				c_mainQuadDisplay2.writeDigitAscii(1, (val%1000)/100 + 48 );
+				c_mainQuadDisplay2.writeDigitAscii(2, (val%100)/10 + 48, true );
+				c_mainQuadDisplay2.writeDigitAscii(3, val%10 + 48 );
+			}
+			break;
+			
+			
+		case e_menuScreen_Temp_Mash_Set:
+			c_mainQuadDisplay1.writeDigitAscii(0, 'M');
+			c_mainQuadDisplay1.writeDigitAscii(1, 'A');
+			c_mainQuadDisplay1.writeDigitAscii(2, 'S');
+			c_mainQuadDisplay1.writeDigitAscii(3, 'H');
+			c_mainQuadDisplay2.writeDigitAscii(0, ':');
+			
+			// write out the setpoint
+			val = int((mashPIDSetpoint * 10) + 0.5) ;
+
+			if ( val < 100 ){
+				c_mainQuadDisplay2.writeDigitAscii(1, ' ');
+				c_mainQuadDisplay2.writeDigitAscii(2, val/10 + 48, true );
+				c_mainQuadDisplay2.writeDigitAscii(3, val%10 + 48 );
+				c_mainQuadDisplay2.writeDigitAscii(0, ':');
+
+				} else if ( val < 1000 ){
+				c_mainQuadDisplay2.writeDigitAscii(1, val/100 + 48 );
+				c_mainQuadDisplay2.writeDigitAscii(2, (val%100)/10 + 48, true );
+				c_mainQuadDisplay2.writeDigitAscii(3, val%10 + 48 );
+				
+				} else if ( val < 10000 ){
+				c_mainQuadDisplay2.writeDigitAscii(1, val/1000 + 48 );
+				c_mainQuadDisplay2.writeDigitAscii(2, (val%1000)/100 + 48 );
+				c_mainQuadDisplay2.writeDigitAscii(3, (val%100)/10 + 48 );
+			}
+			break;
+			
+			
+		case e_menuScreen_Temp_Boil_Set:
+			c_mainQuadDisplay1.writeDigitAscii(0, 'B');
+			c_mainQuadDisplay1.writeDigitAscii(1, 'O');
+			c_mainQuadDisplay1.writeDigitAscii(2, 'I');
+			c_mainQuadDisplay1.writeDigitAscii(3, 'L');
+			c_mainQuadDisplay2.writeDigitAscii(0, ':');
+			
+			// write out the setpoint
+			val = int((boilPIDSetpoint * 10) + 0.5) ;
+
+			if ( val < 100 ){
+				c_mainQuadDisplay2.writeDigitAscii(1, ' ');
+				c_mainQuadDisplay2.writeDigitAscii(2, val/10 + 48, true );
+				c_mainQuadDisplay2.writeDigitAscii(3, val%10 + 48 );
+
+				} else if ( val < 1000 ){
+				c_mainQuadDisplay2.writeDigitAscii(1, val/100 + 48 );
+				c_mainQuadDisplay2.writeDigitAscii(2, (val%100)/10 + 48, true );
+				c_mainQuadDisplay2.writeDigitAscii(3, val%10 + 48 );
+				
+				} else if ( val < 10000 ){
+				c_mainQuadDisplay2.writeDigitAscii(1, val/1000 + 48 );
+				c_mainQuadDisplay2.writeDigitAscii(2, (val%1000)/100 + 48 );
+				c_mainQuadDisplay2.writeDigitAscii(3, (val%100)/10 + 48 );
+			}
+			break;
+			
+			
+		case e_menuScreen_Emergency:
+			c_mainQuadDisplay1.writeDigitAscii(0, 'E');
+			c_mainQuadDisplay1.writeDigitAscii(1, '-');
+			c_mainQuadDisplay1.writeDigitAscii(2, 'S');
+			c_mainQuadDisplay1.writeDigitAscii(3, 'T');
+			c_mainQuadDisplay2.writeDigitAscii(0, 'O');
+			c_mainQuadDisplay2.writeDigitAscii(1, 'P');
+			c_mainQuadDisplay2.writeDigitAscii(2, ' ');
+			c_mainQuadDisplay2.writeDigitAscii(3, ' ');
+			break;
+			
+			
+		case e_menuScreen_Standby:
+			c_mainQuadDisplay1.writeDigitAscii(0, 'S');
+			c_mainQuadDisplay1.writeDigitAscii(1, 'T');
+			c_mainQuadDisplay1.writeDigitAscii(2, 'A');
+			c_mainQuadDisplay1.writeDigitAscii(3, 'N');
+			c_mainQuadDisplay2.writeDigitAscii(0, 'D');
+			c_mainQuadDisplay2.writeDigitAscii(1, 'B');
+			c_mainQuadDisplay2.writeDigitAscii(2, 'Y');
+			c_mainQuadDisplay2.writeDigitAscii(3, ' ');
+			break;
+			
+			
+		default:
+			// Error01
+			c_mainQuadDisplay1.writeDigitAscii(0, 'E');
+			c_mainQuadDisplay1.writeDigitAscii(1, 'R');
+			c_mainQuadDisplay1.writeDigitAscii(2, 'R');
+			c_mainQuadDisplay1.writeDigitAscii(3, 'O');
+			c_mainQuadDisplay2.writeDigitAscii(0, 'R');
+			c_mainQuadDisplay2.writeDigitAscii(1, ' ');
+			c_mainQuadDisplay2.writeDigitAscii(2, '0');
+			c_mainQuadDisplay2.writeDigitAscii(3, '1');
+			break;
+		
+	}
+	
+	
+	c_mainQuadDisplay1.writeDisplay();
+	c_mainQuadDisplay2.writeDisplay();
+}
+
