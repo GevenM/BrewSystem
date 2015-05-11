@@ -61,7 +61,6 @@
   </avrgcc.compiler.symbols.DefSymbols>
   <avrgcc.compiler.directories.IncludePaths>
     <ListValues>
-      <Value></Value>
       <Value>c:/program files (x86)/arduino/hardware/tools/avr/lib/gcc/avr/4.8.1/include/</Value>
       <Value>c:/program files (x86)/arduino/hardware/tools/avr/avr/</Value>
       <Value>c:/program files (x86)/arduino/hardware/tools/avr/avr/include/avr/</Value>
@@ -72,6 +71,14 @@
       <Value>C:/Program Files (x86)/Arduino/libraries</Value>
       <Value>G:/My Things/my docs/Arduino/libraries/TimerOne-r11/utility</Value>
       <Value>G:/My Things/my docs/Arduino/libraries/TimerOne-r11</Value>
+      <Value>G:/My Things/my docs/Arduino/libraries/PID_v1/utility</Value>
+      <Value>G:/My Things/my docs/Arduino/libraries/PID_v1</Value>
+      <Value>G:/My Things/my docs/Arduino/libraries/Adafruit_GFX/utility</Value>
+      <Value>G:/My Things/my docs/Arduino/libraries/Adafruit_GFX</Value>
+      <Value>G:/My Things/my docs/Arduino/libraries/Adafruit_LEDBackpack/utility</Value>
+      <Value>G:/My Things/my docs/Arduino/libraries/Adafruit_LEDBackpack</Value>
+      <Value>C:/Program Files (x86)/Arduino/hardware/arduino/avr/libraries/Wire/utility</Value>
+      <Value>C:/Program Files (x86)/Arduino/hardware/arduino/avr/libraries/Wire</Value>
       <Value>G:/My Things/my docs/Arduino/libraries/OneWire/utility</Value>
       <Value>G:/My Things/my docs/Arduino/libraries/OneWire</Value>
       <Value>C:/Program Files (x86)/Arduino/libraries/Ethernet/src/utility</Value>
@@ -103,7 +110,6 @@
   </avrgcccpp.compiler.symbols.DefSymbols>
   <avrgcccpp.compiler.directories.IncludePaths>
     <ListValues>
-      <Value></Value>
       <Value>c:/program files (x86)/arduino/hardware/tools/avr/lib/gcc/avr/4.8.1/include/</Value>
       <Value>c:/program files (x86)/arduino/hardware/tools/avr/avr/</Value>
       <Value>c:/program files (x86)/arduino/hardware/tools/avr/avr/include/avr/</Value>
@@ -114,6 +120,14 @@
       <Value>C:/Program Files (x86)/Arduino/libraries</Value>
       <Value>G:/My Things/my docs/Arduino/libraries/TimerOne-r11/utility</Value>
       <Value>G:/My Things/my docs/Arduino/libraries/TimerOne-r11</Value>
+      <Value>G:/My Things/my docs/Arduino/libraries/PID_v1/utility</Value>
+      <Value>G:/My Things/my docs/Arduino/libraries/PID_v1</Value>
+      <Value>G:/My Things/my docs/Arduino/libraries/Adafruit_GFX/utility</Value>
+      <Value>G:/My Things/my docs/Arduino/libraries/Adafruit_GFX</Value>
+      <Value>G:/My Things/my docs/Arduino/libraries/Adafruit_LEDBackpack/utility</Value>
+      <Value>G:/My Things/my docs/Arduino/libraries/Adafruit_LEDBackpack</Value>
+      <Value>C:/Program Files (x86)/Arduino/hardware/arduino/avr/libraries/Wire/utility</Value>
+      <Value>C:/Program Files (x86)/Arduino/hardware/arduino/avr/libraries/Wire</Value>
       <Value>G:/My Things/my docs/Arduino/libraries/OneWire/utility</Value>
       <Value>G:/My Things/my docs/Arduino/libraries/OneWire</Value>
       <Value>C:/Program Files (x86)/Arduino/libraries/Ethernet/src/utility</Value>
@@ -140,7 +154,7 @@
   <avrgcccpp.assembler.debugging.DebugLevel>Default (-Wa,-g)</avrgcccpp.assembler.debugging.DebugLevel>
 </AvrGccCpp>
     </ToolchainSettings>
-    <VMSETTING_IncludePaths>C:/Program Files (x86)/Arduino/hardware/arduino/avr/cores/arduino;C:/Program Files (x86)/Arduino/hardware/arduino/avr/variants/standard;C:/Program Files (x86)/Arduino/libraries;C:/Program Files (x86)/Arduino/hardware/arduino/avr/libraries;C:/Program Files (x86)/Visual Micro/Visual Micro for Arduino/Micro Platforms/default/debuggers;G:/My Things/my docs/Arduino/libraries;c:/program files (x86)/arduino/hardware/tools/avr/avr/include/;c:/program files (x86)/arduino/hardware/tools/avr/avr/include/avr/;c:/program files (x86)/arduino/hardware/tools/avr/avr/;c:/program files (x86)/arduino/hardware/tools/avr/lib/gcc/avr/4.3.2/include/;;C:/Program Files (x86)/Arduino/hardware/arduino/avr/libraries/SPI;C:/Program Files (x86)/Arduino/hardware/arduino/avr/libraries/SPI/utility;C:/Program Files (x86)/Arduino/libraries/SD/src;C:/Program Files (x86)/Arduino/libraries/SD/src/utility;C:/Program Files (x86)/Arduino/libraries/Ethernet/src;C:/Program Files (x86)/Arduino/libraries/Ethernet/src/utility;C:/Program Files (x86)/Arduino/hardware/arduino/avr/variants/mega;../../BrewSystem;c:/program files (x86)/arduino/hardware/tools/avr/lib/gcc/avr/4.8.1/include/;G:/My Things/my docs/Arduino/libraries/OneWire;G:/My Things/my docs/Arduino/libraries/OneWire/utility;G:/My Things/my docs/Arduino/libraries/TimerOne-r11;G:/My Things/my docs/Arduino/libraries/TimerOne-r11/utility;</VMSETTING_IncludePaths>
+    <VMSETTING_IncludePaths>C:/Program Files (x86)/Arduino/hardware/arduino/avr/cores/arduino;C:/Program Files (x86)/Arduino/hardware/arduino/avr/variants/standard;C:/Program Files (x86)/Arduino/libraries;C:/Program Files (x86)/Arduino/hardware/arduino/avr/libraries;C:/Program Files (x86)/Visual Micro/Visual Micro for Arduino/Micro Platforms/default/debuggers;G:/My Things/my docs/Arduino/libraries;c:/program files (x86)/arduino/hardware/tools/avr/avr/include/;c:/program files (x86)/arduino/hardware/tools/avr/avr/include/avr/;c:/program files (x86)/arduino/hardware/tools/avr/avr/;c:/program files (x86)/arduino/hardware/tools/avr/lib/gcc/avr/4.3.2/include/;;C:/Program Files (x86)/Arduino/hardware/arduino/avr/libraries/SPI;C:/Program Files (x86)/Arduino/hardware/arduino/avr/libraries/SPI/utility;C:/Program Files (x86)/Arduino/libraries/SD/src;C:/Program Files (x86)/Arduino/libraries/SD/src/utility;C:/Program Files (x86)/Arduino/libraries/Ethernet/src;C:/Program Files (x86)/Arduino/libraries/Ethernet/src/utility;C:/Program Files (x86)/Arduino/hardware/arduino/avr/variants/mega;../../BrewSystem;c:/program files (x86)/arduino/hardware/tools/avr/lib/gcc/avr/4.8.1/include/;G:/My Things/my docs/Arduino/libraries/OneWire;G:/My Things/my docs/Arduino/libraries/OneWire/utility;G:/My Things/my docs/Arduino/libraries/TimerOne-r11;G:/My Things/my docs/Arduino/libraries/TimerOne-r11/utility;C:/Program Files (x86)/Arduino/hardware/arduino/avr/libraries/Wire;C:/Program Files (x86)/Arduino/hardware/arduino/avr/libraries/Wire/utility;G:/My Things/my docs/Arduino/libraries/Adafruit_LEDBackpack;G:/My Things/my docs/Arduino/libraries/Adafruit_LEDBackpack/utility;G:/My Things/my docs/Arduino/libraries/Adafruit_GFX;G:/My Things/my docs/Arduino/libraries/Adafruit_GFX/utility;G:/My Things/my docs/Arduino/libraries/PID_v1;G:/My Things/my docs/Arduino/libraries/PID_v1/utility;</VMSETTING_IncludePaths>
     <VisualMicroSettings>
       <VisualMicroSettings>
         <arduino.upload.port>COM7</arduino.upload.port>
@@ -324,7 +338,6 @@ vmresolved.tools.path=C:\Program Files (x86)\Arduino\hardware\tools\avr
   </avrgcc.compiler.symbols.DefSymbols>
   <avrgcc.compiler.directories.IncludePaths>
     <ListValues>
-      <Value></Value>
       <Value>c:/program files (x86)/arduino/hardware/tools/avr/lib/gcc/avr/4.8.1/include/</Value>
       <Value>c:/program files (x86)/arduino/hardware/tools/avr/avr/</Value>
       <Value>c:/program files (x86)/arduino/hardware/tools/avr/avr/include/avr/</Value>
@@ -335,6 +348,14 @@ vmresolved.tools.path=C:\Program Files (x86)\Arduino\hardware\tools\avr
       <Value>C:/Program Files (x86)/Arduino/libraries</Value>
       <Value>G:/My Things/my docs/Arduino/libraries/TimerOne-r11/utility</Value>
       <Value>G:/My Things/my docs/Arduino/libraries/TimerOne-r11</Value>
+      <Value>G:/My Things/my docs/Arduino/libraries/PID_v1/utility</Value>
+      <Value>G:/My Things/my docs/Arduino/libraries/PID_v1</Value>
+      <Value>G:/My Things/my docs/Arduino/libraries/Adafruit_GFX/utility</Value>
+      <Value>G:/My Things/my docs/Arduino/libraries/Adafruit_GFX</Value>
+      <Value>G:/My Things/my docs/Arduino/libraries/Adafruit_LEDBackpack/utility</Value>
+      <Value>G:/My Things/my docs/Arduino/libraries/Adafruit_LEDBackpack</Value>
+      <Value>C:/Program Files (x86)/Arduino/hardware/arduino/avr/libraries/Wire/utility</Value>
+      <Value>C:/Program Files (x86)/Arduino/hardware/arduino/avr/libraries/Wire</Value>
       <Value>G:/My Things/my docs/Arduino/libraries/OneWire/utility</Value>
       <Value>G:/My Things/my docs/Arduino/libraries/OneWire</Value>
       <Value>C:/Program Files (x86)/Arduino/libraries/Ethernet/src/utility</Value>
@@ -366,7 +387,6 @@ vmresolved.tools.path=C:\Program Files (x86)\Arduino\hardware\tools\avr
   </avrgcccpp.compiler.symbols.DefSymbols>
   <avrgcccpp.compiler.directories.IncludePaths>
     <ListValues>
-      <Value></Value>
       <Value>c:/program files (x86)/arduino/hardware/tools/avr/lib/gcc/avr/4.8.1/include/</Value>
       <Value>c:/program files (x86)/arduino/hardware/tools/avr/avr/</Value>
       <Value>c:/program files (x86)/arduino/hardware/tools/avr/avr/include/avr/</Value>
@@ -377,6 +397,14 @@ vmresolved.tools.path=C:\Program Files (x86)\Arduino\hardware\tools\avr
       <Value>C:/Program Files (x86)/Arduino/libraries</Value>
       <Value>G:/My Things/my docs/Arduino/libraries/TimerOne-r11/utility</Value>
       <Value>G:/My Things/my docs/Arduino/libraries/TimerOne-r11</Value>
+      <Value>G:/My Things/my docs/Arduino/libraries/PID_v1/utility</Value>
+      <Value>G:/My Things/my docs/Arduino/libraries/PID_v1</Value>
+      <Value>G:/My Things/my docs/Arduino/libraries/Adafruit_GFX/utility</Value>
+      <Value>G:/My Things/my docs/Arduino/libraries/Adafruit_GFX</Value>
+      <Value>G:/My Things/my docs/Arduino/libraries/Adafruit_LEDBackpack/utility</Value>
+      <Value>G:/My Things/my docs/Arduino/libraries/Adafruit_LEDBackpack</Value>
+      <Value>C:/Program Files (x86)/Arduino/hardware/arduino/avr/libraries/Wire/utility</Value>
+      <Value>C:/Program Files (x86)/Arduino/hardware/arduino/avr/libraries/Wire</Value>
       <Value>G:/My Things/my docs/Arduino/libraries/OneWire/utility</Value>
       <Value>G:/My Things/my docs/Arduino/libraries/OneWire</Value>
       <Value>C:/Program Files (x86)/Arduino/libraries/Ethernet/src/utility</Value>
@@ -403,7 +431,7 @@ vmresolved.tools.path=C:\Program Files (x86)\Arduino\hardware\tools\avr
   <avrgcccpp.assembler.debugging.DebugLevel>Default (-Wa,-g)</avrgcccpp.assembler.debugging.DebugLevel>
 </AvrGccCpp>
     </ToolchainSettings>
-    <VMSETTING_IncludePaths>C:/Program Files (x86)/Arduino/hardware/arduino/avr/cores/arduino;C:/Program Files (x86)/Arduino/hardware/arduino/avr/variants/standard;C:/Program Files (x86)/Arduino/libraries;C:/Program Files (x86)/Arduino/hardware/arduino/avr/libraries;C:/Program Files (x86)/Visual Micro/Visual Micro for Arduino/Micro Platforms/default/debuggers;G:/My Things/my docs/Arduino/libraries;c:/program files (x86)/arduino/hardware/tools/avr/avr/include/;c:/program files (x86)/arduino/hardware/tools/avr/avr/include/avr/;c:/program files (x86)/arduino/hardware/tools/avr/avr/;c:/program files (x86)/arduino/hardware/tools/avr/lib/gcc/avr/4.3.2/include/;;C:/Program Files (x86)/Arduino/hardware/arduino/avr/libraries/SPI;C:/Program Files (x86)/Arduino/hardware/arduino/avr/libraries/SPI/utility;C:/Program Files (x86)/Arduino/libraries/SD/src;C:/Program Files (x86)/Arduino/libraries/SD/src/utility;C:/Program Files (x86)/Arduino/libraries/Ethernet/src;C:/Program Files (x86)/Arduino/libraries/Ethernet/src/utility;C:/Program Files (x86)/Arduino/hardware/arduino/avr/variants/mega;../../BrewSystem;c:/program files (x86)/arduino/hardware/tools/avr/lib/gcc/avr/4.8.1/include/;G:/My Things/my docs/Arduino/libraries/OneWire;G:/My Things/my docs/Arduino/libraries/OneWire/utility;G:/My Things/my docs/Arduino/libraries/TimerOne-r11;G:/My Things/my docs/Arduino/libraries/TimerOne-r11/utility;</VMSETTING_IncludePaths>
+    <VMSETTING_IncludePaths>C:/Program Files (x86)/Arduino/hardware/arduino/avr/cores/arduino;C:/Program Files (x86)/Arduino/hardware/arduino/avr/variants/standard;C:/Program Files (x86)/Arduino/libraries;C:/Program Files (x86)/Arduino/hardware/arduino/avr/libraries;C:/Program Files (x86)/Visual Micro/Visual Micro for Arduino/Micro Platforms/default/debuggers;G:/My Things/my docs/Arduino/libraries;c:/program files (x86)/arduino/hardware/tools/avr/avr/include/;c:/program files (x86)/arduino/hardware/tools/avr/avr/include/avr/;c:/program files (x86)/arduino/hardware/tools/avr/avr/;c:/program files (x86)/arduino/hardware/tools/avr/lib/gcc/avr/4.3.2/include/;;C:/Program Files (x86)/Arduino/hardware/arduino/avr/libraries/SPI;C:/Program Files (x86)/Arduino/hardware/arduino/avr/libraries/SPI/utility;C:/Program Files (x86)/Arduino/libraries/SD/src;C:/Program Files (x86)/Arduino/libraries/SD/src/utility;C:/Program Files (x86)/Arduino/libraries/Ethernet/src;C:/Program Files (x86)/Arduino/libraries/Ethernet/src/utility;C:/Program Files (x86)/Arduino/hardware/arduino/avr/variants/mega;../../BrewSystem;c:/program files (x86)/arduino/hardware/tools/avr/lib/gcc/avr/4.8.1/include/;G:/My Things/my docs/Arduino/libraries/OneWire;G:/My Things/my docs/Arduino/libraries/OneWire/utility;G:/My Things/my docs/Arduino/libraries/TimerOne-r11;G:/My Things/my docs/Arduino/libraries/TimerOne-r11/utility;C:/Program Files (x86)/Arduino/hardware/arduino/avr/libraries/Wire;C:/Program Files (x86)/Arduino/hardware/arduino/avr/libraries/Wire/utility;G:/My Things/my docs/Arduino/libraries/Adafruit_LEDBackpack;G:/My Things/my docs/Arduino/libraries/Adafruit_LEDBackpack/utility;G:/My Things/my docs/Arduino/libraries/Adafruit_GFX;G:/My Things/my docs/Arduino/libraries/Adafruit_GFX/utility;G:/My Things/my docs/Arduino/libraries/PID_v1;G:/My Things/my docs/Arduino/libraries/PID_v1/utility;</VMSETTING_IncludePaths>
     <VisualMicroSettings>
       <VisualMicroSettings>
         <arduino.upload.port>COM7</arduino.upload.port>
@@ -581,10 +609,28 @@ vmresolved.tools.path=C:\Program Files (x86)\Arduino\hardware\tools\avr
     <Compile Include="HeatingElement.h">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="MomentaryInput.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="MomentaryInput.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="Recipe.c">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="Recipe.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Selector.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Selector.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="SimpleActuator.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="SimpleActuator.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="TempSensor.cpp">
