@@ -19,9 +19,11 @@ class MomentaryInput{
 	
 	private:
 	bool IsPressed();
+	long PressDuration();
 	const uint8_t inputPin;
 	long initialPressTime;
 	long lastPressTime;
+	bool readPending;
 };
 
 

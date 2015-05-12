@@ -7,6 +7,7 @@
 #define LongPressThreshold 2000
 long initialPressTime = -1;
 long lastPressTime = millis();
+bool readPending = true;
 
 MomentaryInput::MomentaryInput(uint8_t pin)
 : inputPin( pin )
@@ -18,16 +19,25 @@ bool MomentaryInput::IsPressed(){
 	return !digitalRead( inputPin );
 }
 
+long MomentaryInput::PressDuration(){
+	return abs( millis() - initialPressTime );
+}
+
 bool MomentaryInput::LongPressed(){
 	if( IsPressed() ){
-		if( initialPressTime == -1 ){
+		if( readPending == false ){
 			initialPressTime = millis();
+			readPending = true;
+			
+		} else if( PressDuration() >= LongPressThreshold ){
+			lastPressTime = millis();
+			return true;
 		}
 	} else {
-		if ( initialPressTime != -1 ) {
-			lastPressTime = millis();
-			if( abs(lastPressTime - initialPressTime) >= LongPressThreshold ){
-				initialPressTime = -1;
+		if ( readPending == true ) {
+			if( PressDuration() >= LongPressThreshold ){
+				lastPressTime = millis();
+				readPending = false;
 				return true;
 			}
 		}
@@ -37,14 +47,16 @@ bool MomentaryInput::LongPressed(){
 
 bool MomentaryInput::ShortPressed(){
 	if( IsPressed() ){
-		if( initialPressTime == -1 ){
+		if( readPending == false ){
 			initialPressTime = millis();
+			readPending = true;
 		}
+		
 	} else {
-		if ( initialPressTime != -1 ) {
-			lastPressTime = millis();
-			if( abs(lastPressTime - initialPressTime) <= LongPressThreshold ){
+		if ( readPending == true ) {
+			if( PressDuration() < LongPressThreshold ){
 				initialPressTime = -1;
+				lastPressTime = millis();
 				return true;
 			}
 		}

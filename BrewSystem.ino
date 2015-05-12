@@ -405,7 +405,7 @@ void UpdateHLT(){
 }
 
 void UpdateMash(){
-	if( c_sysStatus = e_sysStatus_Ready ){
+	if( c_sysStatus == e_sysStatus_Ready ){
 		if( m_sw_mash.IsOn() ){
 			switch( c_mashStatus ){
 			case e_mashStatus_Idle:
@@ -506,7 +506,7 @@ void loop()
 	
 	//------
 	
-	if( c_sysStatus = e_sysStatus_Ready ){
+	if( c_sysStatus == e_sysStatus_Ready ){
 
 		// HLT SWITCH ON
 		if( m_sw_hlt.IsOn() ){
@@ -975,10 +975,10 @@ void UpdateMenu(){
 	
 		switch( c_menuScreen ){
 		case e_menuScreen_Idle:
-			if( m_btn_menuLeft.ShortPressed() ) c_menuScreen = e_menuScreen_Temp;
+			if( m_btn_menuLeft.ShortPressed() ) ;
 			else if( m_btn_menuRight.ShortPressed() ) ;//NC
 			else if( m_btn_menuLeft.LongPressed() ) ;//NC
-			else if( m_btn_menuRight.LongPressed() ) ;//NC
+			else if( m_btn_menuRight.LongPressed() ) c_menuScreen = e_menuScreen_Temp; ;//NC
 			break;
 		
 		case e_menuScreen_Temp:
