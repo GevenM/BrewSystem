@@ -100,8 +100,8 @@ TempSensor * m_temp_boil = &tempSensor[2];
 
 // Known addresses of sensors
 uint8_t addr1[8] = {0x28, 0x52, 0x01, 0x6F, 0x6, 0x0, 0x0, 0x48};
-uint8_t addr2[8] = {0x28, 0xED, 0x3A, 0x5D, 0x6, 0x0, 0x0, 0xD0};
-uint8_t addr3[8] = {0x28, 0x93, 0x31, 0x5D, 0x6, 0x0, 0x0, 0x2B};
+uint8_t addr2[8] = {0x28, 0xAF, 0x99, 0x6E, 0x6, 0x0, 0x0, 0x76};
+uint8_t addr3[8] = {0x28, 0xF0, 0x23, 0x6F, 0x6, 0x0, 0x0, 0x01};
 
 
 // HEATING ELEMENTS
@@ -117,7 +117,7 @@ HeatingElement c_hltElement3(35, 2);
 int pidWindowSize = 1000; // 1000 milliseconds 
 unsigned long pidWindowStartTime;
 
-double boilPIDSetpoint, boilPIDInput, boilPIDOutput;
+double boilPIDSetpoint = 56, boilPIDInput, boilPIDOutput;
 PID boilPID( &boilPIDInput, &boilPIDOutput, &boilPIDSetpoint, 8, 3, 0.2, DIRECT );
 
 double mashPIDSetpoint, mashPIDInput, mashPIDOutput;
@@ -197,7 +197,7 @@ void ReadTemperatureSensors();
 void SetTempResolution( OneWire myds );
 void UpdateTempSensor( TempSensor * sensor );
 void InitDisplays();
-void UpdateMenu();
+bool UpdateMenu();
 void WriteMenu();
 void UpdateMonitoredVariables();
 
@@ -224,11 +224,11 @@ void setup() {
 	
 	// Initialize temperature sensors
 	tempSensor[0].SetAddress(addr1);
-	tempSensor[0].SetName("Boil");
+	tempSensor[0].SetName("HLT");
 	tempSensor[1].SetAddress(addr2);
 	tempSensor[1].SetName("Mash");
 	tempSensor[2].SetAddress(addr3);
-	tempSensor[2].SetName("HLT");
+	tempSensor[2].SetName("Boil");
 	
 	
 	
@@ -238,7 +238,7 @@ void setup() {
 	
 	Serial.begin(9600);
 	
-	Timer1.initialize(1000000); // initialized at 1 sec
+	Timer1.initialize(2000000); // initialized at 2 sec
 	Timer1.attachInterrupt( ISR_TempTimer );
 
 	// disable w5100 while setting up SD
@@ -266,7 +266,7 @@ bool AllEquipmentSwitchesOff(){
 			m_sw_wortPump.IsOff() &&
 			m_sw_waterPump.IsOff() &&
 			//m_sw_glycolPump.IsOff() &&
-			m_sw_transferPump.IsOff() &&
+			//m_sw_transferPump.IsOff() &&
 			m_sw_outlet110.IsOff() &&
 			m_sw_outlet240.IsOff() ) {
 		return true;
@@ -445,8 +445,11 @@ void UpdateMash(){
 
 void loop()
 {
-	UpdateMenu();
-	WriteMenu();
+	//UpdateMenu();
+	
+	if( UpdateMenu() ){
+		WriteMenu();
+	}
 	
 	// update pids with current input values and perform computation. 
 	hltPIDInput = m_temp_hlt->GetTemp();
@@ -930,7 +933,7 @@ void UpdateTempSensor( TempSensor * sensor ){
 	byte data[12];
 	byte addr[8];
 	byte type_s;
-	float celsius, fahrenheit;
+	float celsius;
 	
 	ds.reset();
 	sensor->GetAddress(addr);
@@ -969,7 +972,8 @@ void UpdateTempSensor( TempSensor * sensor ){
 }
 
 
-void UpdateMenu(){
+// returns true if the screens are changed and need to be written to
+bool UpdateMenu(){
 	switch( c_sysStatus ){
 	case e_sysStatus_Ready:
 	
@@ -978,82 +982,86 @@ void UpdateMenu(){
 			if( m_btn_menuLeft.ShortPressed() ) ;
 			else if( m_btn_menuRight.ShortPressed() ) ;//NC
 			else if( m_btn_menuLeft.LongPressed() ) ;//NC
-			else if( m_btn_menuRight.LongPressed() ) c_menuScreen = e_menuScreen_Temp; ;//NC
+			else if( m_btn_menuRight.LongPressed() ){ c_menuScreen = e_menuScreen_Temp; return true; }//NC
 			break;
 		
 		case e_menuScreen_Temp:
 			if( m_btn_menuRight.ShortPressed() ) ;//NC
 			else if( m_btn_menuLeft.ShortPressed() ) ;//NC
-			else if( m_btn_menuRight.LongPressed() ) c_menuScreen = e_menuScreen_Temp_HLT ;
+			else if( m_btn_menuRight.LongPressed() ) { c_menuScreen = e_menuScreen_Temp_HLT; return true; }
 			else if( m_btn_menuLeft.LongPressed() ) ;//NC
-			else if( abs(millis() - m_btn_menuLeft.LastPressTime()) > 10000 && abs(millis() - m_btn_menuRight.LastPressTime()) > 10000 ) c_menuScreen = e_menuScreen_Idle;
+			else if( abs(millis() - m_btn_menuLeft.LastPressTime()) > 10000 && abs(millis() - m_btn_menuRight.LastPressTime()) > 10000 ) { c_menuScreen = e_menuScreen_Idle; return true; }
 			break;
 		
 		case e_menuScreen_Temp_HLT:
-			if( m_btn_menuRight.ShortPressed() ) c_menuScreen = e_menuScreen_Temp_Mash;
-			else if( m_btn_menuLeft.ShortPressed() ) c_menuScreen = e_menuScreen_Temp_Boil;
-			else if( m_btn_menuRight.LongPressed() ) c_menuScreen = e_menuScreen_Temp_HLT_Set;
-			else if( m_btn_menuLeft.LongPressed() ) c_menuScreen = e_menuScreen_Temp;
-			else if( abs(millis() - m_btn_menuLeft.LastPressTime()) > 10000 && abs(millis() - m_btn_menuRight.LastPressTime()) > 10000 ) c_menuScreen = e_menuScreen_Idle;
+			if( m_btn_menuRight.ShortPressed() ){ c_menuScreen = e_menuScreen_Temp_Mash; return true; }
+			else if( m_btn_menuLeft.ShortPressed() ){  c_menuScreen = e_menuScreen_Temp_Boil; return true; }
+			else if( m_btn_menuRight.LongPressed() ){ c_menuScreen = e_menuScreen_Temp_HLT_Set; return true; }
+			else if( m_btn_menuLeft.LongPressed() ){ c_menuScreen = e_menuScreen_Temp; return true; }
+			else if( abs(millis() - m_btn_menuLeft.LastPressTime()) > 10000 && abs(millis() - m_btn_menuRight.LastPressTime()) > 10000 ){ c_menuScreen = e_menuScreen_Idle; return true; }
 			break;
 			
 		case e_menuScreen_Temp_Mash:
-			if( m_btn_menuRight.ShortPressed() ) c_menuScreen = e_menuScreen_Temp_Boil;
-			else if( m_btn_menuLeft.ShortPressed() ) c_menuScreen = e_menuScreen_Temp_HLT;
-			else if( m_btn_menuRight.LongPressed() ) c_menuScreen = e_menuScreen_Temp_Mash_Set;
-			else if( m_btn_menuLeft.LongPressed() ) c_menuScreen = e_menuScreen_Temp;
-			else if( abs(millis() - m_btn_menuLeft.LastPressTime()) > 10000 && abs(millis() - m_btn_menuRight.LastPressTime()) > 10000 ) c_menuScreen = e_menuScreen_Idle;
+			if( m_btn_menuRight.ShortPressed() ){ c_menuScreen = e_menuScreen_Temp_Boil; return true; }
+			else if( m_btn_menuLeft.ShortPressed() ){ c_menuScreen = e_menuScreen_Temp_HLT; return true; }
+			else if( m_btn_menuRight.LongPressed() ){ c_menuScreen = e_menuScreen_Temp_Mash_Set; return true; }
+			else if( m_btn_menuLeft.LongPressed() ){ c_menuScreen = e_menuScreen_Temp; return true; } 
+			else if( abs(millis() - m_btn_menuLeft.LastPressTime()) > 10000 && abs(millis() - m_btn_menuRight.LastPressTime()) > 10000 ){ c_menuScreen = e_menuScreen_Idle; return true; }
 			break;
 			
 		case e_menuScreen_Temp_Boil:
-			if( m_btn_menuRight.ShortPressed() ) c_menuScreen = e_menuScreen_Temp_HLT;
-			else if( m_btn_menuLeft.ShortPressed() ) c_menuScreen = e_menuScreen_Temp_Mash;
-			else if( m_btn_menuRight.LongPressed() ) c_menuScreen = e_menuScreen_Temp_Boil_Set;
-			else if( m_btn_menuLeft.LongPressed() ) c_menuScreen = e_menuScreen_Temp;
-			else if( abs(millis() - m_btn_menuLeft.LastPressTime()) > 10000 && abs(millis() - m_btn_menuRight.LastPressTime()) > 10000 ) c_menuScreen = e_menuScreen_Idle;
+			if( m_btn_menuRight.ShortPressed() ){ c_menuScreen = e_menuScreen_Temp_HLT; return true; }
+			else if( m_btn_menuLeft.ShortPressed() ){ c_menuScreen = e_menuScreen_Temp_Mash; return true; }
+			else if( m_btn_menuRight.LongPressed() ){ c_menuScreen = e_menuScreen_Temp_Boil_Set; return true; }
+			else if( m_btn_menuLeft.LongPressed() ){ c_menuScreen = e_menuScreen_Temp; return true; }
+			else if( abs(millis() - m_btn_menuLeft.LastPressTime()) > 10000 && abs(millis() - m_btn_menuRight.LastPressTime()) > 10000 ){ c_menuScreen = e_menuScreen_Idle; return true; }
 			break;
 			
 		case e_menuScreen_Temp_HLT_Set:
-			if( m_btn_menuRight.ShortPressed() ) hltPIDSetpoint++; 
-			else if( m_btn_menuLeft.ShortPressed() ) hltPIDSetpoint--;
+			if( m_btn_menuRight.ShortPressed() ){ hltPIDSetpoint++;  return true; }
+			else if( m_btn_menuLeft.ShortPressed() ){ hltPIDSetpoint--; return true; }
 			else if( m_btn_menuRight.LongPressed() ) ; //NC
-			else if( m_btn_menuLeft.LongPressed() ) c_menuScreen = e_menuScreen_Temp;
-			else if( abs(millis() - m_btn_menuLeft.LastPressTime()) > 10000 && abs(millis() - m_btn_menuRight.LastPressTime()) > 10000 ) c_menuScreen = e_menuScreen_Idle;
+			else if( m_btn_menuLeft.LongPressed() ){ c_menuScreen = e_menuScreen_Temp; return true; }
+			else if( abs(millis() - m_btn_menuLeft.LastPressTime()) > 10000 && abs(millis() - m_btn_menuRight.LastPressTime()) > 10000 ){ c_menuScreen = e_menuScreen_Idle; return true; }
 			break;	
 			
 		case e_menuScreen_Temp_Mash_Set:
-			if( m_btn_menuRight.ShortPressed() ) mashPIDSetpoint++;
-			else if( m_btn_menuLeft.ShortPressed() ) mashPIDSetpoint--;
+			if( m_btn_menuRight.ShortPressed() ){ mashPIDSetpoint++; return true; }
+			else if( m_btn_menuLeft.ShortPressed() ){ mashPIDSetpoint--; return true; }
 			else if( m_btn_menuRight.LongPressed() ) ; //NC
-			else if( m_btn_menuLeft.LongPressed() ) c_menuScreen = e_menuScreen_Temp;
-			else if( abs(millis() - m_btn_menuLeft.LastPressTime()) > 10000 && abs(millis() - m_btn_menuRight.LastPressTime()) > 10000 ) c_menuScreen = e_menuScreen_Idle;
+			else if( m_btn_menuLeft.LongPressed() ){ c_menuScreen = e_menuScreen_Temp; return true; }
+			else if( abs(millis() - m_btn_menuLeft.LastPressTime()) > 10000 && abs(millis() - m_btn_menuRight.LastPressTime()) > 10000 ){ c_menuScreen = e_menuScreen_Idle; return true; }
 			break;
 		
 		case e_menuScreen_Temp_Boil_Set:
-			if( m_btn_menuRight.ShortPressed() ) boilPIDOutput++;
-			else if( m_btn_menuLeft.ShortPressed() ) boilPIDSetpoint--;
+			if( m_btn_menuRight.ShortPressed() ){ boilPIDOutput++; return true; }
+			else if( m_btn_menuLeft.ShortPressed() ){ boilPIDSetpoint--; return true; }
 			else if( m_btn_menuRight.LongPressed() ) ; //NC
-			else if( m_btn_menuLeft.LongPressed() ) c_menuScreen = e_menuScreen_Temp;
-			else if( abs(millis() - m_btn_menuLeft.LastPressTime()) > 10000 && abs(millis() - m_btn_menuRight.LastPressTime()) > 10000 ) c_menuScreen = e_menuScreen_Idle;
+			else if( m_btn_menuLeft.LongPressed() ){ c_menuScreen = e_menuScreen_Temp; return true; }
+			else if( abs(millis() - m_btn_menuLeft.LastPressTime()) > 10000 && abs(millis() - m_btn_menuRight.LastPressTime()) > 10000 ){ c_menuScreen = e_menuScreen_Idle; return true; }
 			break;
 	
 		default:
 			c_menuScreen = e_menuScreen_Idle;	
+			return true;
 		}
 		break;
 	
 	
 	case e_sysStatus_Emergency:
 		c_menuScreen = e_menuScreen_Emergency;
+		return true;
 		break;
 		
 	
 	case e_sysStatus_Standby:
 		c_menuScreen = e_menuScreen_Standby;
+		return true;
 		break;
 	
 	default: break;
 	}
+	return false;
 }
 
 void WriteMenu(){
@@ -1244,7 +1252,6 @@ void WriteMenu(){
 			break;
 		
 	}
-	
 	
 	c_mainQuadDisplay1.writeDisplay();
 	c_mainQuadDisplay2.writeDisplay();
