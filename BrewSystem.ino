@@ -118,39 +118,39 @@ int pidWindowSize = 1000; // 1000 milliseconds
 unsigned long pidWindowStartTime;
 
 double boilPIDSetpoint = 100, boilPIDInput, boilPIDOutput;
-PID boilPID( &boilPIDInput, &boilPIDOutput, &boilPIDSetpoint, 8, 3, 0.2, DIRECT );
+PID boilPID( &boilPIDInput, &boilPIDOutput, &boilPIDSetpoint, 20, 0.1, 1, DIRECT );
 
 double mashPIDSetpoint, mashPIDInput, mashPIDOutput;
-PID mashPID( &mashPIDInput, &mashPIDOutput, &mashPIDSetpoint, 8, 3, 0.2, DIRECT );
+PID mashPID( &mashPIDInput, &mashPIDOutput, &mashPIDSetpoint, 20, 0.1, 1, DIRECT );
 
 double hltPIDSetpoint = 25, hltPIDInput, hltPIDOutput;
-PID hltPID( &hltPIDInput, &hltPIDOutput, &hltPIDSetpoint, 8, 3, 0.2, DIRECT );
+PID hltPID( &hltPIDInput, &hltPIDOutput, &hltPIDSetpoint, 20, 0.1, 1, DIRECT );
 
 
 // PUMPS
-SimpleActuator c_wortPump( 22 );
-SimpleActuator c_waterPump( 24 );
-SimpleActuator c_glycolPump( 26 );
-SimpleActuator c_transferPump( 28 );
+SimpleActuator c_wortPump( 22, true );
+SimpleActuator c_waterPump( 24, true );
+SimpleActuator c_glycolPump( 26, true );
+SimpleActuator c_transferPump( 28, true );
 
 // OUTLETS
-SimpleActuator c_outlet110( 30 );
-SimpleActuator c_outlet240( 32 );
+SimpleActuator c_outlet110( 30, true );
+SimpleActuator c_outlet240( 32, true );
 
 // GLYCOL VALVES
-SimpleActuator c_glycolValve_FV1( 62 );
-SimpleActuator c_glycolValve_FV2( 63 );
-SimpleActuator c_glycolValve_FV3( 64 );
-SimpleActuator c_glycolValve_FV4( 65 );
-SimpleActuator c_glycolValve_FV5( 66 );
-SimpleActuator c_glycolValve_BB1( 67 );
-SimpleActuator c_glycolValve_chiller( 68 );
+SimpleActuator c_glycolValve_FV1( 62, true );
+SimpleActuator c_glycolValve_FV2( 63, true );
+SimpleActuator c_glycolValve_FV3( 64, true );
+SimpleActuator c_glycolValve_FV4( 65, true );
+SimpleActuator c_glycolValve_FV5( 66, true );
+SimpleActuator c_glycolValve_BB1( 67, true );
+SimpleActuator c_glycolValve_chiller( 68, true );
 
 
 // SPARES
-SimpleActuator c_unnassigned1( 34 );
-SimpleActuator c_unnassigned2( 36 );
-SimpleActuator c_glycolValve_unassigned1( 69 );
+SimpleActuator c_unnassigned1( 34, true );
+SimpleActuator c_unnassigned2( 36, true );
+SimpleActuator c_glycolValve_unassigned1( 69, true );
 
 
 
@@ -171,8 +171,8 @@ Selector m_sw_outlet110( 41 );
 Selector m_sw_outlet240( 43 );
 
 // PUSH BUTTONS
-MomentaryInput m_btn_menuLeft( 45 );
-MomentaryInput m_btn_menuRight( 47 );
+MomentaryInput m_btn_menuLeft( 47 );
+MomentaryInput m_btn_menuRight( 45 );
 
 // ETHERNET 
 // Enter a MAC address and IP address for your controller below.
@@ -236,23 +236,23 @@ void setup() {
 	InitDisplays();
 
 	
-	Serial.begin(9600);
+	//Serial.begin(9600);
 	
-	Timer1.initialize(1000000); // initialized at 2 sec
+	Timer1.initialize(2000000); // initialized at 2 sec
 	Timer1.attachInterrupt( ISR_TempTimer );
 
 	// disable w5100 while setting up SD
 	pinMode(10,OUTPUT);
 	digitalWrite(10,HIGH);
 
-	if(SD.begin(4) == 0) Serial.println("SD fail");
-	else Serial.println("SD ok");
+	if(SD.begin(4) == 0) ;//Serial.println("SD fail");
+	//else Serial.println("SD ok");
 
 	Ethernet.begin(mac,ip);
 	digitalWrite(10,HIGH);
 
-	Serial.print("server is at ");
-	Serial.println(Ethernet.localIP());
+	//Serial.print("server is at ");
+	//Serial.println(Ethernet.localIP());
 	
 	SetTempResolution( ds );
 	StartTempConversion();
@@ -325,7 +325,7 @@ void HLTControlTemp(){
 		c_hltElement2.Deactivate();
 		c_hltElement3.Deactivate();
 		
-		if( (hltPIDOutput * 3) < millis() - pidWindowStartTime){
+		if( (hltPIDOutput * 3) > millis() - pidWindowStartTime){
 			c_hltElement1.Activate();
 		} else {
 			c_hltElement1.Deactivate();
@@ -335,7 +335,7 @@ void HLTControlTemp(){
 		c_hltElement1.Activate();
 		c_hltElement3.Deactivate();
 		
-		if( ( (hltPIDOutput - pidWindowSize/3) * 3) < millis() - pidWindowStartTime){
+		if( ( (hltPIDOutput - pidWindowSize/3) * 3) > millis() - pidWindowStartTime){
 			c_hltElement2.Activate();
 		} else {
 			c_hltElement2.Deactivate();
@@ -345,7 +345,7 @@ void HLTControlTemp(){
 		c_hltElement1.Activate();
 		c_hltElement2.Activate();
 		
-		if( ( (hltPIDOutput - pidWindowSize/3*2) * 3) < millis() - pidWindowStartTime){
+		if( ( (hltPIDOutput - pidWindowSize/3*2) * 3) > millis() - pidWindowStartTime){
 			c_hltElement3.Activate();
 		} else {
 			c_hltElement3.Deactivate();
@@ -879,7 +879,7 @@ bool TempSensorPresent( TempSensor * sensor ){
 
 	while( ds.search(addFound) ){
 		if (OneWire::crc8(addFound, 7) != addFound[7]) {
-			Serial.println("CRC is not valid!");
+			//Serial.println("CRC is not valid!");
 			return false;
 		}
 		for( int j = 0 ; j < 8; j++ ){
@@ -907,9 +907,9 @@ void ReadTemperatureSensors(){
 	float celsius, fahrenheit;
 	bool found = false;
 	
-	Serial.println(" ");
-	Serial.print("Number of Sensors: ");
-	Serial.println(TempSensor::GetNumberOfSensors());
+	//Serial.println(" ");
+	//Serial.print("Number of Sensors: ");
+	//Serial.println(TempSensor::GetNumberOfSensors());
 	
 	for( i = 0; i <  TempSensor::GetNumberOfSensors(); i++ ){
 		
@@ -918,14 +918,14 @@ void ReadTemperatureSensors(){
 		if ( tempSensor[i].IsPresent() ){
 			
 			UpdateTempSensor( &tempSensor[i] );
-			Serial.print( tempSensor[i].GetName() );
-			Serial.print(" temperature ");
-			Serial.print( tempSensor[i].GetTemp() );
-			Serial.println(" Celcius.");
+			//Serial.print( tempSensor[i].GetName() );
+			//Serial.print(" temperature ");
+			//Serial.print( tempSensor[i].GetTemp() );
+			//Serial.println(" Celcius.");
 
 			} else {
-			Serial.print( tempSensor[i].GetName() );
-			Serial.println(" NOT found" );
+			//Serial.print( tempSensor[i].GetName() );
+			//Serial.println(" NOT found" );
 		}
 	}
 	return;

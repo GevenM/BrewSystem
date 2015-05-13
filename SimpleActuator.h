@@ -11,7 +11,7 @@
 
 class SimpleActuator{
 	public:
-	SimpleActuator( uint8_t pin );
+	SimpleActuator( uint8_t pin, bool normallyClosed = false );
 	
 	void Activate();
 	void Deactivate();
@@ -19,6 +19,7 @@ class SimpleActuator{
 	
 	private:
 	const uint8_t outputPin;
+	bool normallyClosed; // indicates whether normally open or normally closed contact. True for normally closed.
 	bool outputStatus;
 };
 

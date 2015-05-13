@@ -31,6 +31,7 @@ bool MomentaryInput::LongPressed(){
 			
 		} else if( PressDuration() >= LongPressThreshold ){
 			lastPressTime = millis();
+			readPending = false;
 			return true;
 		}
 	} else {
@@ -57,6 +58,7 @@ bool MomentaryInput::ShortPressed(){
 			if( PressDuration() < LongPressThreshold ){
 				initialPressTime = -1;
 				lastPressTime = millis();
+				readPending = false;
 				return true;
 			}
 		}
