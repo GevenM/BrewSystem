@@ -117,13 +117,13 @@ HeatingElement c_hltElement3(35, 2);
 int pidWindowSize = 1000; // 1000 milliseconds 
 unsigned long pidWindowStartTime;
 
-double boilPIDSetpoint = 56, boilPIDInput, boilPIDOutput;
+double boilPIDSetpoint = 100, boilPIDInput, boilPIDOutput;
 PID boilPID( &boilPIDInput, &boilPIDOutput, &boilPIDSetpoint, 8, 3, 0.2, DIRECT );
 
 double mashPIDSetpoint, mashPIDInput, mashPIDOutput;
 PID mashPID( &mashPIDInput, &mashPIDOutput, &mashPIDSetpoint, 8, 3, 0.2, DIRECT );
 
-double hltPIDSetpoint, hltPIDInput, hltPIDOutput;
+double hltPIDSetpoint = 25, hltPIDInput, hltPIDOutput;
 PID hltPID( &hltPIDInput, &hltPIDOutput, &hltPIDSetpoint, 8, 3, 0.2, DIRECT );
 
 
@@ -238,7 +238,7 @@ void setup() {
 	
 	Serial.begin(9600);
 	
-	Timer1.initialize(2000000); // initialized at 2 sec
+	Timer1.initialize(1000000); // initialized at 2 sec
 	Timer1.attachInterrupt( ISR_TempTimer );
 
 	// disable w5100 while setting up SD
@@ -322,6 +322,9 @@ void HLTControlTemp(){
 		
 	// Control output based on the output suggested by pid. Divided into three levels.
 	if( hltPIDOutput < pidWindowSize/3 ){
+		c_hltElement2.Deactivate();
+		c_hltElement3.Deactivate();
+		
 		if( (hltPIDOutput * 3) < millis() - pidWindowStartTime){
 			c_hltElement1.Activate();
 		} else {
@@ -330,6 +333,7 @@ void HLTControlTemp(){
 		
 	} else if ( hltPIDOutput < pidWindowSize/3*2 ){
 		c_hltElement1.Activate();
+		c_hltElement3.Deactivate();
 		
 		if( ( (hltPIDOutput - pidWindowSize/3) * 3) < millis() - pidWindowStartTime){
 			c_hltElement2.Activate();
