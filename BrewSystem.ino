@@ -239,7 +239,7 @@ void setup() {
 	
 	//Serial.begin(9600);
 	
-	Timer1.initialize(2000000); // initialized at 2 sec
+	Timer1.initialize(500000); // initialized at .5 sec
 	Timer1.attachInterrupt( ISR_TempTimer );
 
 	// disable w5100 while setting up SD
@@ -462,6 +462,10 @@ void loop()
 		c_mashDisplay.writeDisplay();
 		c_boilDisplay.writeDisplay();
 		c_mainDisplay.writeDisplay();
+		
+		c_mainQuadDisplay1.writeDisplay();
+		c_mainQuadDisplay2.writeDisplay();
+		screenUpdateFlag = false;
 	}
 	
 	// update pids with current input values and perform computation. 
@@ -1261,8 +1265,5 @@ void WriteMenu(){
 			break;
 		
 	}
-	
-	c_mainQuadDisplay1.writeDisplay();
-	c_mainQuadDisplay2.writeDisplay();
 }
 
