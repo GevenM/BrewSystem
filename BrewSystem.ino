@@ -25,6 +25,7 @@ y_recipe theGlobalRecipe;
 int m_hltWaterLevel = 0;
 #define k_hltMinWaterLevel 50
 int m_hltDesiredWaterLevel = 250;
+bool screenUpdateFlag = true;
 
 typedef enum {
 	e_sysStatus_Standby,
@@ -118,7 +119,7 @@ int pidWindowSize = 1000; // 1000 milliseconds
 unsigned long pidWindowStartTime;
 
 double boilPIDSetpoint = 100, boilPIDInput, boilPIDOutput;
-PID boilPID( &boilPIDInput, &boilPIDOutput, &boilPIDSetpoint, 20, 0.1, 1, DIRECT );
+PID boilPID( &boilPIDInput, &boilPIDOutput, &boilPIDSetpoint, 40, 0.2, 0.1, DIRECT );
 
 double mashPIDSetpoint, mashPIDInput, mashPIDOutput;
 PID mashPID( &mashPIDInput, &mashPIDOutput, &mashPIDSetpoint, 20, 0.1, 1, DIRECT );
@@ -135,7 +136,7 @@ SimpleActuator c_transferPump( 28, true );
 
 // OUTLETS
 SimpleActuator c_outlet110( 30, true );
-SimpleActuator c_outlet240( 32, true );
+SimpleActuator c_outlet240( 34, true );
 
 // GLYCOL VALVES
 SimpleActuator c_glycolValve_FV1( 62, true );
@@ -148,7 +149,7 @@ SimpleActuator c_glycolValve_chiller( 68, true );
 
 
 // SPARES
-SimpleActuator c_unnassigned1( 34, true );
+SimpleActuator c_unnassigned1( 32, true );
 SimpleActuator c_unnassigned2( 36, true );
 SimpleActuator c_glycolValve_unassigned1( 69, true );
 
@@ -211,13 +212,13 @@ void setup() {
 	boilPIDSetpoint = 60;
 	
 	boilPID.SetOutputLimits( 0, pidWindowSize );
-	boilPID.SetSampleTime( 2000 );
+	boilPID.SetSampleTime( 4000 );
 	boilPID.SetMode( AUTOMATIC );
 	mashPID.SetOutputLimits( 0, pidWindowSize );
-	mashPID.SetSampleTime( 2000 );
+	mashPID.SetSampleTime( 4000 );
 	mashPID.SetMode( AUTOMATIC );
 	hltPID.SetOutputLimits( 0, pidWindowSize );
-	hltPID.SetSampleTime( 2000 );
+	hltPID.SetSampleTime( 4000 );
 	hltPID.SetMode( AUTOMATIC );
 	//------
 	
@@ -245,7 +246,7 @@ void setup() {
 	pinMode(10,OUTPUT);
 	digitalWrite(10,HIGH);
 
-	if(SD.begin(4) == 0) ;//Serial.println("SD fail");
+//	if(SD.begin(4) == 0) ;//Serial.println("SD fail");
 	//else Serial.println("SD ok");
 
 	Ethernet.begin(mac,ip);
@@ -455,6 +456,14 @@ void loop()
 		WriteMenu();
 	}
 	
+	if( screenUpdateFlag ){
+		// write it out!
+		c_hltDisplay.writeDisplay();
+		c_mashDisplay.writeDisplay();
+		c_boilDisplay.writeDisplay();
+		c_mainDisplay.writeDisplay();
+	}
+	
 	// update pids with current input values and perform computation. 
 	hltPIDInput = m_temp_hlt->GetTemp();
 	hltPID.Compute();
@@ -514,7 +523,7 @@ void loop()
 	//------
 	
 	if( c_sysStatus == e_sysStatus_Ready ){
-
+	
 		// HLT SWITCH ON
 		if( m_sw_hlt.IsOn() ){
 			
@@ -774,6 +783,7 @@ void loop()
 		client.stop();
 		//Serial.println("client disconnected");
 	}
+	
 
 }
 
@@ -839,12 +849,7 @@ void SetTempResolution( OneWire myds ) {
 void ISR_TempTimer( ){
 	ReadTemperatureSensors();
 	StartTempConversion();
-	
-	// write it out!
-	c_hltDisplay.writeDisplay();
-	c_mashDisplay.writeDisplay();
-	c_boilDisplay.writeDisplay();
-	c_mainDisplay.writeDisplay();
+	screenUpdateFlag = true; 
 }
 
 void StartTempConversion(){
