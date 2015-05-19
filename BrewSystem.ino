@@ -202,6 +202,13 @@ bool UpdateMenu();
 void WriteMenu();
 void UpdateMonitoredVariables();
 
+void HLTTurnOff();
+void HLTControlTemp();
+void MashTurnOff();
+void MashControlTemp();
+void BoilTurnOff();
+void BoilControlTemp();
+
 /************************************************************************************/
 
 
@@ -212,24 +219,26 @@ void setup() {
 	boilPIDSetpoint = 60;
 	
 	boilPID.SetOutputLimits( 0, pidWindowSize );
-	boilPID.SetSampleTime( 4000 );
+	boilPID.SetSampleTime( 5000 );
 	boilPID.SetMode( AUTOMATIC );
 	mashPID.SetOutputLimits( 0, pidWindowSize );
-	mashPID.SetSampleTime( 4000 );
+	mashPID.SetSampleTime( 5000 );
 	mashPID.SetMode( AUTOMATIC );
 	hltPID.SetOutputLimits( 0, pidWindowSize );
-	hltPID.SetSampleTime( 4000 );
+	hltPID.SetSampleTime( 5000 );
 	hltPID.SetMode( AUTOMATIC );
 	//------
 	
 	
 	// Initialize temperature sensors
-	tempSensor[0].SetAddress(addr1);
-	tempSensor[0].SetName("HLT");
-	tempSensor[1].SetAddress(addr2);
-	tempSensor[1].SetName("Mash");
-	tempSensor[2].SetAddress(addr3);
-	tempSensor[2].SetName("Boil");
+	m_temp_hlt->SetAddress( addr1 );
+	m_temp_hlt->SetName( "HLT" );
+	
+	m_temp_mash->SetAddress( addr2 );
+	m_temp_mash->SetName( "Mash" );
+	
+	m_temp_boil->SetAddress( addr3 );
+	m_temp_boil->SetName( "Boil" );
 	
 	
 	
@@ -354,6 +363,54 @@ void HLTControlTemp(){
 	}
 }
 
+void BoilControlTemp(){
+	// {CONTROL TEMPERATURE}
+	boilPID.SetMode( AUTOMATIC );
+	
+	// Control output based on the output suggested by pid. Divided into three levels.
+	if( boilPIDOutput < pidWindowSize/3 ){
+		c_boilElement2.Deactivate();
+		c_boilElement3.Deactivate();
+		
+		if( (boilPIDOutput * 3) > millis() - pidWindowStartTime){
+			c_boilElement1.Activate();
+			} else {
+			c_boilElement1.Deactivate();
+		}
+		
+		} else if ( boilPIDOutput < pidWindowSize/3*2 ){
+		c_boilElement1.Activate();
+		c_boilElement3.Deactivate();
+		
+		if( ( (boilPIDOutput - pidWindowSize/3) * 3) > millis() - pidWindowStartTime){
+			c_boilElement2.Activate();
+			} else {
+			c_boilElement2.Deactivate();
+		}
+		
+		} else {
+		c_boilElement1.Activate();
+		c_boilElement2.Activate();
+		
+		if( ( (boilPIDOutput - pidWindowSize/3*2) * 3) > millis() - pidWindowStartTime){
+			c_boilElement3.Activate();
+			} else {
+			c_boilElement3.Deactivate();
+		}
+	}
+}
+
+void MashControlTemp(){
+	// {CONTROL TEMPERATURE}
+	mashPID.SetMode( AUTOMATIC );
+	
+	if(  mashPIDOutput > millis() - pidWindowStartTime){
+		c_mashElement.Activate();
+		} else {
+		c_mashElement.Deactivate();
+	}
+}
+
 
 void HLTTurnOff(){
 	// { TURN OFF ELEMENTS }
@@ -361,6 +418,22 @@ void HLTTurnOff(){
 	c_hltElement1.Deactivate();
 	c_hltElement2.Deactivate();
 	c_hltElement3.Deactivate();
+	// ---------------------
+}
+
+void BoilTurnOff(){
+	// { TURN OFF ELEMENTS }
+	boilPID.SetMode( MANUAL );
+	c_boilElement1.Deactivate();
+	c_boilElement2.Deactivate();
+	c_boilElement3.Deactivate();
+	// ---------------------
+}
+
+void MashTurnOff(){
+	// { TURN OFF ELEMENTS }
+	mashPID.SetMode( MANUAL );
+	c_mashElement.Deactivate();
 	// ---------------------
 }
 
@@ -472,11 +545,11 @@ void loop()
 	hltPIDInput = m_temp_hlt->GetTemp();
 	hltPID.Compute();
 	
-	//mashPIDInput = m_temp_mash->GetTemp();
-	//mashPID.Compute();
+	mashPIDInput = m_temp_mash->GetTemp();
+	mashPID.Compute();
 		
-//	boilPIDInput = m_temp_boil->GetTemp();
-//	boilPID.Compute();
+	boilPIDInput = m_temp_boil->GetTemp();
+	boilPID.Compute();
 			
 	// Check if the relay window needs to be shifted
 	if(millis() - pidWindowStartTime > pidWindowSize) { 
@@ -569,11 +642,7 @@ void loop()
 		// BOIL SWITCH ON
 		if( m_sw_boil.IsOn() ){
 			
-			
-			// ACTIVATE ELEMENTS
-			c_boilElement1.Activate();
-			c_boilElement2.Activate();
-			c_boilElement3.Activate();
+			BoilControlTemp();
 		
 			// write temperature
 			int val = int((m_temp_boil->GetTemp() * 10) + 0.5) ;
@@ -602,10 +671,8 @@ void loop()
 
 			} else {
 				
-				c_boilElement1.Deactivate();
-				c_boilElement2.Deactivate();
-				c_boilElement3.Deactivate();
-		
+				BoilTurnOff();
+				
 				c_boilDisplay.writeDigitAscii(0, 'I');
 				c_boilDisplay.writeDigitAscii(1, 'D');
 				c_boilDisplay.writeDigitAscii(2, 'L');
@@ -615,8 +682,8 @@ void loop()
 	
 		// MASH SWITCH ON
 		if( m_sw_mash.IsOn() ){
-			// ACTIVATE ELEMENTS
-			c_mashElement.Activate();
+			
+			MashControlTemp();
 		
 			// set every digit to the buffer
 			int val = int((m_temp_mash->GetTemp() * 10) + 0.5) ;
@@ -644,7 +711,7 @@ void loop()
 
 			} else {
 			//DEACTIVATE ELEMENTS
-			c_mashElement.Deactivate();
+			MashTurnOff();
 		
 			// set every digit to the buffer
 			c_mashDisplay.writeDigitAscii(0, 'I');
@@ -675,7 +742,7 @@ void loop()
 		}
 			
 		// TRANSFER PUMP
-	
+		c_transferPump.Activate();
 	
 	
 		// OUTLET 110V
@@ -695,14 +762,10 @@ void loop()
 		}
 	} else {
 		
-		c_hltElement1.Deactivate();
-		c_hltElement2.Deactivate();
-		c_hltElement3.Deactivate();
-		c_boilElement1.Deactivate();
-		c_boilElement2.Deactivate();
-		c_boilElement3.Deactivate();
-		c_mashElement.Deactivate();
-		
+		HLTTurnOff();
+		MashTurnOff();
+		BoilTurnOff();
+				
 		c_wortPump.Deactivate();
 		c_waterPump.Deactivate();
 		c_glycolPump.Deactivate();
