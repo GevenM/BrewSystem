@@ -186,7 +186,7 @@ byte gateway[] = { 192, 168, 0, 1 };
 byte subnet[] = { 255, 255, 255, 0 };
 
 unsigned int localPort = 8888;      // local port to listen for UDP packets
-IPAddress timeServer(132, 164, 4, 101); //ntp server
+IPAddress timeServer(206, 108, 0, 131); //ntp server
 const int timeZone = -5;
 
 const int NTP_PACKET_SIZE= 48; // NTP time stamp is in the first 48 bytes of the message
@@ -283,9 +283,9 @@ void setup() {
 	setSyncProvider(getNtpTime); // wait until the time is set by the sync provider
 
 	if(timeStatus()== timeNotSet){
-		Serial.println("sync success");; // success
+		Serial.println("sync fail");; // success
 	} else {
-		Serial.println("sync fail");;//failed to set
+		Serial.println("sync success");;//failed to set
 	}
 	
 	Serial.print("server is at ");
