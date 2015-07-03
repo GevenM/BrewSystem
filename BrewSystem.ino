@@ -186,7 +186,7 @@ byte gateway[] = { 192, 168, 0, 1 };
 byte subnet[] = { 255, 255, 255, 0 };
 
 unsigned int localPort = 8888;      // local port to listen for UDP packets
-char timeServer[]  = "time.nrc.ca"; //ntp server 132.246.11.231 time.nrc.ca
+char timeServer[]  = "time.nist.gov"; //ntp server
 const int NTP_PACKET_SIZE= 48; // NTP time stamp is in the first 48 bytes of the message
 byte packetBuffer[ NTP_PACKET_SIZE]; //buffer to hold incoming and outgoing packets
 const  long timeZoneOffset = -18000L; // set this to the offset in seconds to your local time;
@@ -271,7 +271,7 @@ void setup() {
 	Udp.begin(localPort);
 	digitalWrite(10,HIGH);
 	
-	delay (500);
+	delay (5000);
 	
 	
 	setSyncProvider(getNtpTime); // wait until the time is set by the sync provider
@@ -546,6 +546,18 @@ void loop()
 		WriteMenu();
 	}
 	
+	// MAIN TIMER
+	if( timeStatus() == timeSet ){
+		c_mainDisplay.writeDigitNum(0, hour()/10 );
+		c_mainDisplay.writeDigitNum(1, hour()%10 );
+		c_mainDisplay.drawColon( true );
+		c_mainDisplay.writeDigitNum(2, minute()/10 );
+		c_mainDisplay.writeDigitNum(3, minute()%10 );
+		} else {
+		c_mainDisplay.println( 1111 );
+		c_mainDisplay.drawColon( true );
+	}
+		
 	if( screenUpdateFlag ){
 		// write it out!
 		c_hltDisplay.writeDisplay();
