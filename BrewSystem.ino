@@ -186,7 +186,7 @@ byte gateway[] = { 192, 168, 0, 1 };
 byte subnet[] = { 255, 255, 255, 0 };
 
 unsigned int localPort = 8888;      // local port to listen for UDP packets
-IPAddress timeServer(206, 108, 0, 131); //ntp server
+IPAddress timeServer(66, 113, 32, 5); //ntp server
 const int timeZone = -5;
 
 const int NTP_PACKET_SIZE= 48; // NTP time stamp is in the first 48 bytes of the message
@@ -279,15 +279,25 @@ void setup() {
 	delay (500);
 	
 	setSyncInterval( 86400 );
-	Serial.println("waiting for sync");
-	setSyncProvider(getNtpTime); // wait until the time is set by the sync provider
-
-	if(timeStatus()== timeNotSet){
-		Serial.println("sync fail");; // success
-	} else {
-		Serial.println("sync success");;//failed to set
-	}
 	
+	Serial.println("waiting for sync");
+	int i;
+	for( i = 0; i< 5; i++ ){
+		Serial.print("try ");
+		Serial.print( i );
+		Serial.println("");
+		
+		setSyncProvider(getNtpTime); // wait until the time is set by the sync provider
+		if(timeStatus()== timeNotSet){
+			Serial.println("sync fail");; // success
+			} else {
+			Serial.println("sync success");;//failed to set
+			break;
+		}
+		
+		delay(5000);
+	}
+		
 	Serial.print("server is at ");
 	Serial.println(Ethernet.localIP());
 	
@@ -560,12 +570,12 @@ void loop()
 	if( timeStatus() == timeSet ){
 		c_mainDisplay.writeDigitNum(0, hour()/10 );
 		c_mainDisplay.writeDigitNum(1, hour()%10 );
-		c_mainDisplay.drawColon( true );
+		c_mainDisplay.writeColon( );
 		c_mainDisplay.writeDigitNum(2, minute()/10 );
 		c_mainDisplay.writeDigitNum(3, minute()%10 );
 		} else {
 		c_mainDisplay.println( 1111 );
-		c_mainDisplay.drawColon( true );
+		c_mainDisplay.writeColon( );
 	}
 		
 	if( screenUpdateFlag ){
