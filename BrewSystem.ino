@@ -186,10 +186,12 @@ byte gateway[] = { 192, 168, 0, 1 };
 byte subnet[] = { 255, 255, 255, 0 };
 
 unsigned int localPort = 8888;      // local port to listen for UDP packets
-char timeServer[]  = "time.nist.gov"; //ntp server
+IPAddress timeServer(132, 164, 4, 101); //ntp server
+const int timeZone = -5;
+
 const int NTP_PACKET_SIZE= 48; // NTP time stamp is in the first 48 bytes of the message
 byte packetBuffer[ NTP_PACKET_SIZE]; //buffer to hold incoming and outgoing packets
-const  long timeZoneOffset = -18000L; // set this to the offset in seconds to your local time;
+//const  long timeZoneOffset = -18000L; // set this to the offset in seconds to your local time;
 
 // Initialize the Ethernet server library
 // with the IP address and port you want to use
@@ -222,6 +224,8 @@ void BoilControlTemp();
 
 
 void setup() {
+	Serial.begin(9600);
+	delay(250);
 	
 	// PID setup
 	pidWindowStartTime = millis();
@@ -269,17 +273,23 @@ void setup() {
 
 	Ethernet.begin(mac,ip);
 	Udp.begin(localPort);
+	
 	digitalWrite(10,HIGH);
 	
-	delay (5000);
+	delay (500);
 	
-	
+	setSyncInterval( 86400 );
+	Serial.println("waiting for sync");
 	setSyncProvider(getNtpTime); // wait until the time is set by the sync provider
-	while(timeStatus()== timeNotSet)
-	; //wait to set time
+
+	if(timeStatus()== timeNotSet){
+		Serial.println("sync success");; // success
+	} else {
+		Serial.println("sync fail");;//failed to set
+	}
 	
-	//Serial.print("server is at ");
-	//Serial.println(Ethernet.localIP());
+	Serial.print("server is at ");
+	Serial.println(Ethernet.localIP());
 	
 	SetTempResolution( ds );
 	StartTempConversion();
@@ -1371,38 +1381,32 @@ void WriteMenu(){
 
 /*-------- NTP code ----------*/
 
-unsigned long getNtpTime()
+time_t getNtpTime()
 {
-	sendNTPpacket(timeServer); // send an NTP packet to a time server
-
-	unsigned long startMillis = millis();
-	while( millis() - startMillis < 1000)  // wait up to one second for the response
-	{  // wait to see if a reply is available
-		if ( Udp.available() )
-		{
-			Udp.read(packetBuffer,NTP_PACKET_SIZE);  // read the packet into the buffer
-
-			//the timestamp starts at byte 40 of the received packet and is four bytes,
-			// or two words, long. First, esxtract the two words:
-			unsigned long highWord = word(packetBuffer[40], packetBuffer[41]);
-			unsigned long lowWord = word(packetBuffer[42], packetBuffer[43]);
-			// combine the four bytes (two words) into a long integer
-			// this is NTP time (seconds since Jan 1 1900):
-			unsigned long secsSince1900 = highWord << 16 | lowWord;
-			// now convert NTP time into Arduino Time format:
-			// Time starts on Jan 1 1970. In seconds, that's 2208988800:
-			const unsigned long seventyYears = 2208988800UL;
-			// subtract seventy years:
-			unsigned long epoch = secsSince1900 - seventyYears;
-
-			return epoch;
+	while (Udp.parsePacket() > 0) ; // discard any previously received packets
+	Serial.println("Transmit NTP Request");
+	sendNTPpacket(timeServer);
+	uint32_t beginWait = millis();
+	while (millis() - beginWait < 1500) {
+		int size = Udp.parsePacket();
+		if (size >= NTP_PACKET_SIZE) {
+			Serial.println("Receive NTP Response");
+			Udp.read(packetBuffer, NTP_PACKET_SIZE);  // read packet into the buffer
+			unsigned long secsSince1900;
+			// convert four bytes starting at location 40 to a long integer
+			secsSince1900 =  (unsigned long)packetBuffer[40] << 24;
+			secsSince1900 |= (unsigned long)packetBuffer[41] << 16;
+			secsSince1900 |= (unsigned long)packetBuffer[42] << 8;
+			secsSince1900 |= (unsigned long)packetBuffer[43];
+			return secsSince1900 - 2208988800UL + timeZone * SECS_PER_HOUR;
 		}
 	}
-	return 0;   // return 0 if unable to get the time
+	Serial.println("No NTP Response :-(");
+	return 0; // return 0 if unable to get the time
 }
 
 // send an NTP request to the time server at the given address
-unsigned long sendNTPpacket(char* address)
+void sendNTPpacket(IPAddress &address)
 {
 	// set all bytes in the buffer to 0
 	memset(packetBuffer, 0, NTP_PACKET_SIZE);
@@ -1417,7 +1421,6 @@ unsigned long sendNTPpacket(char* address)
 	packetBuffer[13]  = 0x4E;
 	packetBuffer[14]  = 49;
 	packetBuffer[15]  = 52;
-
 	// all NTP fields have been given values, now
 	// you can send a packet requesting a timestamp:
 	Udp.beginPacket(address, 123); //NTP requests are to port 123
