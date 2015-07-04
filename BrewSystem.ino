@@ -186,8 +186,8 @@ byte gateway[] = { 192, 168, 0, 1 };
 byte subnet[] = { 255, 255, 255, 0 };
 
 unsigned int localPort = 8888;      // local port to listen for UDP packets
-IPAddress timeServer(66, 113, 32, 5); //ntp server
-const int timeZone = -5;
+IPAddress timeServer(206, 108, 0,131); //ntp server
+const int timeZone = -4;
 
 const int NTP_PACKET_SIZE= 48; // NTP time stamp is in the first 48 bytes of the message
 byte packetBuffer[ NTP_PACKET_SIZE]; //buffer to hold incoming and outgoing packets
@@ -600,14 +600,12 @@ void loop()
 	
 	// MAIN TIMER
 	if( timeStatus() == timeSet ){
-		c_mainDisplay.writeDigitNum(0, hour()/10 );
-		c_mainDisplay.writeDigitNum(1, hour()%10 );
-		c_mainDisplay.writeColon( );
-		c_mainDisplay.writeDigitNum(2, minute()/10 );
-		c_mainDisplay.writeDigitNum(3, minute()%10 );
+                  int fulltime = hour()*100 + minute();
+                c_mainDisplay.println(fulltime);
+		c_mainDisplay.drawColon( true );
 		} else {
 		c_mainDisplay.println( 1111 );
-		c_mainDisplay.writeColon( );
+		c_mainDisplay.drawColon( true );
 	}
 		
 	if( screenUpdateFlag ){
