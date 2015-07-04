@@ -268,8 +268,11 @@ void setup() {
 	pinMode(10,OUTPUT);
 	digitalWrite(10,HIGH);
 
-//	if(SD.begin(4) == 0) ;//Serial.println("SD fail");
-	//else Serial.println("SD ok");
+	if(SD.begin(4) == 0){
+		Serial.println("SD fail");
+	} else{
+		 Serial.println("SD ok");
+	}
 
 	Ethernet.begin(mac,ip);
 	Udp.begin(localPort);
@@ -557,10 +560,39 @@ void UpdateMash(){
 	}
 }
 
+int prevLogTime = 0; 
 
 void loop()
 {
 	//UpdateMenu();
+	
+	if ( minute() != prevLogTime ){
+		// log data
+		String dataString = "";
+		
+		// print time and date
+		dataString += String(hour()) + String(minute()) + String(second()) + " " + String(day()) + "/" + String(month()) + "/" + String(year());
+		
+		// print item
+		dataString += "," + String(m_temp_hlt->GetName()) ;
+		
+		// print value
+		dataString += "," + String(m_temp_hlt->GetTemp());
+	
+		// open file to log to
+		File logFile = SD.open("logFile.txt", FILE_WRITE );
+		
+		// check if available and write to it. 
+		if( logFile ){
+			logFile.println( dataString );
+			logFile.close();
+		} else {
+			Serial.println("error opening log file.");
+		}
+		
+		// set time of writing 
+		prevLogTime = minute();
+	}
 	
 	if( UpdateMenu() ){
 		WriteMenu();
