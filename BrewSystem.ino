@@ -24,6 +24,8 @@ y_recipe theGlobalRecipe;
 
 
 // Global Variables
+int secondCounter = 0;
+bool readTemperatureSensorFlag = false;
 int m_hltWaterLevel = 0;
 #define k_hltMinWaterLevel 50
 int m_hltDesiredWaterLevel = 250;
@@ -134,10 +136,10 @@ unsigned long pidWindowStartTime;
 double boilPIDSetpoint = 100, boilPIDInput, boilPIDOutput;
 PID boilPID( &boilPIDInput, &boilPIDOutput, &boilPIDSetpoint, 40, 0.2, 0.1, DIRECT );
 
-double mashPIDSetpoint, mashPIDInput, mashPIDOutput;
+double mashPIDSetpoint = 64, mashPIDInput, mashPIDOutput;
 PID mashPID( &mashPIDInput, &mashPIDOutput, &mashPIDSetpoint, 20, 0.1, 1, DIRECT );
 
-double hltPIDSetpoint = 25, hltPIDInput, hltPIDOutput;
+double hltPIDSetpoint = 70, hltPIDInput, hltPIDOutput;
 PID hltPID( &hltPIDInput, &hltPIDOutput, &hltPIDSetpoint, 20, 0.1, 1, DIRECT );
 
 
@@ -600,6 +602,11 @@ void loop()
 {
 	//UpdateMenu();
 	
+	if ( readTemperatureSensorFlag ){
+		readTemperatureSensorFlag = false;
+		ReadTemperatureSensors();
+	}
+	
 	if ( minute() != prevLogTime ){
 		// log data
 		String dataString = "";
@@ -666,6 +673,7 @@ void loop()
 		c_mainQuadDisplay2.writeDisplay();
 		screenUpdateFlag = false;
 	}
+	
 	
 	// update pids with current input values and perform computation. 
 	hltPIDInput = m_temp_hlt->GetTemp();
@@ -1047,9 +1055,21 @@ void SetTempResolution( OneWire myds ) {
 	myds.write(0x3F);
 }
 
-void ISR_TempTimer( ){
-	ReadTemperatureSensors();
-	StartTempConversion();
+
+
+void ISR_TempTimer( ){	
+	if ( secondCounter == 0 ){
+		StartTempConversion();
+		secondCounter ++;
+	} else if ( secondCounter == 1 ){
+		readTemperatureSensorFlag = true;
+		secondCounter ++;
+	} else if ( secondCounter == 10 ){
+		secondCounter == 0;
+	} else {
+		secondCounter ++;
+	}
+
 	screenUpdateFlag = true; 
 }
 
