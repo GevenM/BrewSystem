@@ -242,13 +242,11 @@ void BoilControlTemp();
 
 void setup() {
 	//Serial.begin(9600);
-	delay(250);
+	//delay(250);
 	
 	// PID setup
 	pidWindowStartTime = millis();
 	boilPIDSetpoint = 100;
-	mashPIDSetpoint = 64;
-	hltPIDSetpoint = 70;
 	
 	boilPID.SetOutputLimits( 0, pidWindowSize );
 	boilPID.SetSampleTime( 5000 );
@@ -297,7 +295,7 @@ void setup() {
 	
 	//Serial.begin(9600);
 	
-	Timer1.initialize(500000); // initialized at .5 sec
+	Timer1.initialize(1000000); // initialized at 1 sec
 	Timer1.attachInterrupt( ISR_TempTimer );
 
 	// disable w5100 while setting up SD
@@ -305,9 +303,9 @@ void setup() {
 	digitalWrite(10,HIGH);
 
 	if(SD.begin(4) == 0){
-		//Serial.println("SD fail");
+		;//Serial.println("SD fail");
 	} else{
-		 //Serial.println("SD ok");
+		 ;//Serial.println("SD ok");
 	}
 
 	Ethernet.begin(mac,ip);
@@ -328,7 +326,7 @@ void setup() {
 		
 		setSyncProvider(getNtpTime); // wait until the time is set by the sync provider
 		if(timeStatus()== timeNotSet){
-			//Serial.println("sync fail");; // success
+			;//Serial.println("sync fail");; // success
 			} else {
 			//Serial.println("sync success");;//failed to set
 			break;
@@ -649,12 +647,12 @@ void loop()
 	
 	// MAIN TIMER
 	if( timeStatus() == timeSet ){
-                  int fulltime = hour()*100 + minute();
-                c_mainDisplay.println(fulltime);
+        int fulltime = hour()*100 + minute();
+        c_mainDisplay.println(fulltime);
 		c_mainDisplay.drawColon( true );
-		} else {
+	} else {
 		c_mainDisplay.println( 1111 );
-		c_mainDisplay.drawColon( true );
+		c_mainDisplay.drawColon( false );
 	}
 		
 	if( screenUpdateFlag ){
