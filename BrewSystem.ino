@@ -230,7 +230,7 @@ void BoilControlTemp();
 
 
 void setup() {
-	Serial.begin(9600);
+	//Serial.begin(9600);
 	delay(250);
 	
 	// PID setup
@@ -275,9 +275,9 @@ void setup() {
 	digitalWrite(10,HIGH);
 
 	if(SD.begin(4) == 0){
-		Serial.println("SD fail");
+		//Serial.println("SD fail");
 	} else{
-		 Serial.println("SD ok");
+		 //Serial.println("SD ok");
 	}
 
 	Ethernet.begin(mac,ip);
@@ -289,26 +289,26 @@ void setup() {
 	
 	setSyncInterval( 86400 );
 	
-	Serial.println("waiting for sync");
+	//Serial.println("waiting for sync");
 	int i;
 	for( i = 0; i< 5; i++ ){
-		Serial.print("try ");
-		Serial.print( i );
-		Serial.println("");
+		//Serial.print("try ");
+		//Serial.print( i );
+		//Serial.println("");
 		
 		setSyncProvider(getNtpTime); // wait until the time is set by the sync provider
 		if(timeStatus()== timeNotSet){
-			Serial.println("sync fail");; // success
+			//Serial.println("sync fail");; // success
 			} else {
-			Serial.println("sync success");;//failed to set
+			//Serial.println("sync success");;//failed to set
 			break;
 		}
 		
 		delay(5000);
 	}
 		
-	Serial.print("server is at ");
-	Serial.println(Ethernet.localIP());
+	//Serial.print("server is at ");
+	//Serial.println(Ethernet.localIP());
 	
 	SetTempResolution( ds );
 	StartTempConversion();
@@ -606,7 +606,7 @@ void loop()
 			logFile.println( dataString );
 			logFile.close();
 		} else {
-			Serial.println("error opening log file.");
+			//Serial.println("error opening log file.");
 		}
 		
 		// set time of writing 
@@ -664,23 +664,23 @@ void loop()
 	/*
 	if( m_sw_boil.IsOn() ){
 		if( !c_boilElement1.IsActive()){
-			//Serial.println("Boil activate");
+			////Serial.println("Boil activate");
 			c_boilElement1.Activate();
 		}
 	} else if ( c_boilElement1.IsActive() ){
 		c_boilElement1.Deactivate();
-		//Serial.println("Boil deactivate");
+		////Serial.println("Boil deactivate");
 	}
 	
 	
 	if( m_sw_hlt.IsOn() ){
 		if( !c_hltElement1.IsActive()){
-			//Serial.println("hlt activate");
+			////Serial.println("hlt activate");
 			c_hltElement1.Activate();
 		}
 	} else if (c_hltElement1.IsActive() ){ 
 		c_hltElement1.Deactivate();
-		//Serial.println("hlt deactivate");
+		////Serial.println("hlt deactivate");
 	}*/
 	
 	// PID stuff
@@ -893,7 +893,7 @@ void loop()
 	// listen for incoming clients
 	EthernetClient client = server.available();
 	if (client) {
-		//Serial.println("new client");
+		////Serial.println("new client");
 		// an http request ends with a blank line
 		boolean currentLineIsBlank = true;
 		while (client.connected()) {
@@ -905,7 +905,7 @@ void loop()
 					HTTP_req[req_index] = c;          // save HTTP request character
 					req_index++;
 				}
-				Serial.print(c);    // print HTTP request character to serial monitor
+				//Serial.print(c);    // print HTTP request character to //Serial monitor
 				// last line of client request is blank and ends with \n
 				// respond to client only after last line received
 				if (c == '\n' && currentLineIsBlank) {
@@ -948,7 +948,7 @@ void loop()
 		delay(1);
 		// close the connection:
 		client.stop();
-		//Serial.println("client disconnected");
+		////Serial.println("client disconnected");
 	}
 }
 
@@ -1057,7 +1057,7 @@ bool TempSensorPresent( TempSensor * sensor ){
 
 	while( ds.search(addFound) ){
 		if (OneWire::crc8(addFound, 7) != addFound[7]) {
-			//Serial.println("CRC is not valid!");
+			////Serial.println("CRC is not valid!");
 			return false;
 		}
 		for( int j = 0 ; j < 8; j++ ){
@@ -1085,9 +1085,9 @@ void ReadTemperatureSensors(){
 	float celsius, fahrenheit;
 	bool found = false;
 	
-	//Serial.println(" ");
-	//Serial.print("Number of Sensors: ");
-	//Serial.println(TempSensor::GetNumberOfSensors());
+	////Serial.println(" ");
+	////Serial.print("Number of Sensors: ");
+	////Serial.println(TempSensor::GetNumberOfSensors());
 	
 	for( i = 0; i <  TempSensor::GetNumberOfSensors(); i++ ){
 		
@@ -1096,14 +1096,14 @@ void ReadTemperatureSensors(){
 		if ( tempSensor[i].IsPresent() ){
 			
 			UpdateTempSensor( &tempSensor[i] );
-			//Serial.print( tempSensor[i].GetName() );
-			//Serial.print(" temperature ");
-			//Serial.print( tempSensor[i].GetTemp() );
-			//Serial.println(" Celcius.");
+			////Serial.print( tempSensor[i].GetName() );
+			////Serial.print(" temperature ");
+			////Serial.print( tempSensor[i].GetTemp() );
+			////Serial.println(" Celcius.");
 
 			} else {
-			//Serial.print( tempSensor[i].GetName() );
-			//Serial.println(" NOT found" );
+			////Serial.print( tempSensor[i].GetName() );
+			////Serial.println(" NOT found" );
 		}
 	}
 	return;
@@ -1216,7 +1216,7 @@ bool UpdateMenu(){
 			break;
 		
 		case e_menuScreen_Temp_Boil_Set:
-			if( m_btn_menuRight.ShortPressed() ){ boilPIDOutput++; return true; }
+			if( m_btn_menuRight.ShortPressed() ){ boilPIDSetpoint++; return true; }
 			else if( m_btn_menuLeft.ShortPressed() ){ boilPIDSetpoint--; return true; }
 			else if( m_btn_menuRight.LongPressed() ) ; //NC
 			else if( m_btn_menuLeft.LongPressed() ){ c_menuScreen = e_menuScreen_Temp; return true; }
@@ -1443,13 +1443,13 @@ void WriteMenu(){
 time_t getNtpTime()
 {
 	while (Udp.parsePacket() > 0) ; // discard any previously received packets
-	Serial.println("Transmit NTP Request");
+	//Serial.println("Transmit NTP Request");
 	sendNTPpacket(timeServer);
 	uint32_t beginWait = millis();
 	while (millis() - beginWait < 1500) {
 		int size = Udp.parsePacket();
 		if (size >= NTP_PACKET_SIZE) {
-			Serial.println("Receive NTP Response");
+			//Serial.println("Receive NTP Response");
 			Udp.read(packetBuffer, NTP_PACKET_SIZE);  // read packet into the buffer
 			unsigned long secsSince1900;
 			// convert four bytes starting at location 40 to a long integer
@@ -1460,7 +1460,7 @@ time_t getNtpTime()
 			return secsSince1900 - 2208988800UL + timeZone * SECS_PER_HOUR;
 		}
 	}
-	Serial.println("No NTP Response :-(");
+	//Serial.println("No NTP Response :-(");
 	return 0; // return 0 if unable to get the time
 }
 
