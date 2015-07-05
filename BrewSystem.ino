@@ -93,20 +93,31 @@ Adafruit_7segment c_mainDisplay = Adafruit_7segment();
 
 
 // TEMPERATURE SENSORS
-TempSensor tempSensor[3]; // Array holding all the temperature sensors (so that they can be read sequentially using a loop)
+TempSensor tempSensor[9]; // Array holding all the temperature sensors (so that they can be read sequentially using a loop)
 
 // temperature sensors by name so that they can be addressed in a non confusing way.
 TempSensor * m_temp_hlt = &tempSensor[0];
 TempSensor * m_temp_mash = &tempSensor[1];
 TempSensor * m_temp_boil = &tempSensor[2];
+TempSensor * m_temp_bb1 = &tempSensor[3];
+TempSensor * m_temp_fv1 = &tempSensor[4];
+TempSensor * m_temp_fv2 = &tempSensor[5];
+TempSensor * m_temp_fv3 = &tempSensor[6];
+TempSensor * m_temp_fv4 = &tempSensor[7];
+TempSensor * m_temp_fv5 = &tempSensor[8];
 
 
 // Known addresses of sensors
 uint8_t addr1[8] = {0x28, 0x52, 0x01, 0x6F, 0x6, 0x0, 0x0, 0x48};
 uint8_t addr2[8] = {0x28, 0xAF, 0x99, 0x6E, 0x6, 0x0, 0x0, 0x76};
 uint8_t addr3[8] = {0x28, 0xF0, 0x23, 0x6F, 0x6, 0x0, 0x0, 0x01};
-
-
+uint8_t addr11[8] = {0x28, 0x93, 0x31, 0x5D, 0x6, 0x0, 0x0, 0x2B};
+uint8_t addr12[8] = {0x28, 0xED, 0x3A, 0x5D, 0x6, 0x0, 0x0, 0xD0};
+uint8_t addr9[8] = {0x28, 0x9C, 0xDE, 0x6E, 0x6, 0x0, 0x0, 0x7A};
+uint8_t addr5[8] = {0x28, 0x81, 0x24, 0x6F, 0x6, 0x0, 0x0, 0xFF};
+uint8_t addr4[8] = {0x28, 0xD6, 0x7B, 0x6E, 0x6, 0x0, 0x0, 0x21};
+uint8_t addr8[8] = {0x28, 0x20, 0x83, 0x6E, 0x6, 0x0, 0x0, 0x79};
+	
 // HEATING ELEMENTS
 HeatingElement c_boilElement1(23, 0);
 HeatingElement c_boilElement2(25, 1);
@@ -235,7 +246,9 @@ void setup() {
 	
 	// PID setup
 	pidWindowStartTime = millis();
-	boilPIDSetpoint = 60;
+	boilPIDSetpoint = 100;
+	mashPIDSetpoint = 64;
+	hltPIDSetpoint = 70;
 	
 	boilPID.SetOutputLimits( 0, pidWindowSize );
 	boilPID.SetSampleTime( 5000 );
@@ -259,6 +272,23 @@ void setup() {
 	m_temp_boil->SetAddress( addr3 );
 	m_temp_boil->SetName( "Boil" );
 	
+	m_temp_bb1->SetAddress( addr11 );
+	m_temp_bb1->SetName( "BB1" );
+
+	m_temp_fv1->SetAddress( addr12 );
+	m_temp_fv1->SetName( "FV1" );
+
+	m_temp_fv2->SetAddress( addr9 );
+	m_temp_fv2->SetName( "FV2" );
+
+	m_temp_fv3->SetAddress( addr5 );
+	m_temp_fv3->SetName( "FV3" );
+
+	m_temp_fv4->SetAddress( addr4 );
+	m_temp_fv4->SetName( "FV4" );
+	
+	m_temp_fv5->SetAddress( addr8 );
+	m_temp_fv5->SetName( "FV5" );
 	
 	
 	// INITIALIZE LED DISPLAYS
@@ -593,10 +623,10 @@ void loop()
 		dataString += String(second()) + " " + String(day()) + "/" + String(month()) + "/" + String(year());
 		
 		// print item
-		dataString += "," + String(m_temp_hlt->GetName()) ;
+		dataString += "," + String(m_temp_mash->GetName()) ;
 		
 		// print value
-		dataString += "," + String(m_temp_hlt->GetTemp());
+		dataString += "," + String(m_temp_mash->GetTemp());
 	
 		// open file to log to
 		File logFile = SD.open("logFile.csv", FILE_WRITE );
@@ -1104,6 +1134,7 @@ void ReadTemperatureSensors(){
 			} else {
 			////Serial.print( tempSensor[i].GetName() );
 			////Serial.println(" NOT found" );
+			;
 		}
 	}
 	return;
