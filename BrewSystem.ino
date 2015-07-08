@@ -243,8 +243,8 @@ void BoilControlTemp();
 
 
 void setup() {
-	//Serial.begin(9600);
-	//delay(250);
+	Serial.begin(9600);
+	delay(250);
 	
 	// PID setup
 	pidWindowStartTime = millis();
@@ -1062,6 +1062,8 @@ void SetTempResolution( OneWire myds ) {
 
 
 void ISR_TempTimer( ){	
+	Serial.println("ISR");
+	
 	if ( secondCounter == 0 ){
 		StartTempConversion();
 		secondCounter ++;
@@ -1081,6 +1083,7 @@ void StartTempConversion(){
 	ds.reset();
 	ds.skip(); // skip rom
 	ds.write(0x44); // sends a temp conversion command to all the sensors
+	Serial.println("Send Conversion");
 }
 
 void populateRecipe(){
@@ -1134,9 +1137,9 @@ void ReadTemperatureSensors(){
 	////Serial.println(" ");
 	////Serial.print("Number of Sensors: ");
 	////Serial.println(TempSensor::GetNumberOfSensors());
-	
+			Serial.print("Temp Sensor read: ");
+			
 	for( i = 0; i <  TempSensor::GetNumberOfSensors(); i++ ){
-		
 		//tempSensor[i].SetPresence( TempSensorPresent( &tempSensor[i]));
 		
 		
@@ -1194,6 +1197,7 @@ void UpdateTempSensor( TempSensor * sensor ){
 		//// default is 12 bit resolution, 750 ms conversion time
 	}
 	sensor->SetTemp( (float)raw / 16.0 );
+	Serial.println((float)raw / 16.0);
 }
 
 
