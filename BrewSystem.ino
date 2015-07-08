@@ -297,7 +297,7 @@ void setup() {
 	
 	//Serial.begin(9600);
 	
-	Timer1.initialize(1000000); // initialized at 1 sec
+	Timer1.initialize(500000); // initialized at 0.5 sec
 	Timer1.attachInterrupt( ISR_TempTimer );
 
 	// disable w5100 while setting up SD
@@ -732,9 +732,12 @@ void loop()
 //	else c_boilElement1.Deactivate();
 	
 	//------
+
 	
 	if( c_sysStatus == e_sysStatus_Ready ){
-	
+		if( processFlag ){
+			processFlag = false;
+			
 		// HLT SWITCH ON
 		if( m_sw_hlt.IsOn() ){
 			
@@ -894,6 +897,7 @@ void loop()
 		} else {
 			c_outlet240.Deactivate();
 		}
+		}
 	} else {
 		
 		HLTTurnOff();
@@ -924,8 +928,9 @@ void loop()
 		c_boilDisplay.writeDigitAscii(1, 'D');
 		c_boilDisplay.writeDigitAscii(2, 'L');
 		c_boilDisplay.writeDigitAscii(3, 'E');
+	
 	}
-			
+		
 	// listen for incoming clients
 	EthernetClient client = server.available();
 	if (client) {
@@ -1070,13 +1075,18 @@ void ISR_TempTimer( ){
 	} else if ( secondCounter == 1 ){
 		readTemperatureSensorFlag = true;
 		secondCounter ++;
-	} else if ( secondCounter >= 3 ){
+	} else if ( secondCounter >= 7 ){
 		secondCounter == 0;
 	} else {
 		secondCounter ++;
 	}
-
-	screenUpdateFlag = true; 
+	
+	if( secondCounter%2 == 0 )
+	{
+		processFlag = true;
+	} else {
+		screenUpdateFlag = true; 
+	}
 }
 
 void StartTempConversion(){
