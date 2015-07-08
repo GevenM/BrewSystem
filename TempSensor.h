@@ -16,6 +16,8 @@ public:
 	void SetTemp( float );
 	void SetAddress( uint8_t * );
 	void SetName( char * );
+	void SetConversionFlag( bool );
+	bool GetConversionFlag( );
 	
 	float GetTemp();
 	void GetAddress( uint8_t * addr );

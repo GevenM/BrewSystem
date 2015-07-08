@@ -3,9 +3,18 @@
 #include <string.h>
 
 int TempSensor::numberOfSensors = 0;
+bool conversionFlag = true;
 
 int TempSensor::GetNumberOfSensors(){
 	return numberOfSensors;
+}
+
+void TempSensor::SetConversionFlag( bool flag ){
+	conversionFlag = flag;
+}
+
+bool TempSensor::GetConversionFlag(){
+	return conversionFlag;
 }
 
 

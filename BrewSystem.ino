@@ -19,6 +19,7 @@
 #include <Adafruit_LEDBackpack.h>
 #include <Adafruit_GFX.h>
 #include <PID_v1.h>
+#include <DallasTemperature.h>
 
 y_recipe theGlobalRecipe;
 
@@ -81,11 +82,6 @@ y_menuScreen c_menuScreen = e_menuScreen_Idle;
 
 /************************* HARDWARE LAYER ***************************/
 
-// One wire bus
-#define ONE_WIRE_PIN 11
-OneWire  ds( ONE_WIRE_PIN );  // (a 4.7K resistor is necessary)
-
-
 // led screens (use i2c bus)
 Adafruit_AlphaNum4 c_hltDisplay = Adafruit_AlphaNum4();
 Adafruit_AlphaNum4 c_mashDisplay = Adafruit_AlphaNum4();
@@ -95,6 +91,31 @@ Adafruit_AlphaNum4 c_mainQuadDisplay2 = Adafruit_AlphaNum4();
 Adafruit_7segment c_mainDisplay = Adafruit_7segment();
 
 
+// One wire bus
+// Data wire is plugged into port 2 on the Arduino
+#define ONE_WIRE_BUS 11
+#define TEMPERATURE_PRECISION 9
+
+// Setup a oneWire instance to communicate with any OneWire devices (not just Maxim/Dallas temperature ICs)
+OneWire oneWire(ONE_WIRE_BUS);
+
+// Pass our oneWire reference to Dallas Temperature.
+DallasTemperature sensors(&oneWire);
+
+// arrays to hold device addresses
+//DeviceAddress m_tempAddr_boil, m_tempAddr_mash, m_tempAddr_hlt, m_tempAddr_bb1, m_tempAddr_fv1, m_tempAddr_fv2, m_tempAddr_fv3, m_tempAddr_fv4, m_tempAddr_fv5;
+
+	// Assign known addresses of sensors
+DeviceAddress	m_tempAddr_hlt = {0x28, 0x52, 0x01, 0x6F, 0x6, 0x0, 0x0, 0x48};
+DeviceAddress m_tempAddr_mash = {0x28, 0xAF, 0x99, 0x6E, 0x6, 0x0, 0x0, 0x76};
+DeviceAddress m_tempAddr_boil = {0x28, 0xF0, 0x23, 0x6F, 0x6, 0x0, 0x0, 0x01};
+DeviceAddress	m_tempAddr_bb1 = {0x28, 0x93, 0x31, 0x5D, 0x6, 0x0, 0x0, 0x2B};
+DeviceAddress	m_tempAddr_fv1 = {0x28, 0xED, 0x3A, 0x5D, 0x6, 0x0, 0x0, 0xD0};
+DeviceAddress	m_tempAddr_fv2 = {0x28, 0x9C, 0xDE, 0x6E, 0x6, 0x0, 0x0, 0x7A};
+DeviceAddress	m_tempAddr_fv3 = {0x28, 0x81, 0x24, 0x6F, 0x6, 0x0, 0x0, 0xFF};
+DeviceAddress	m_tempAddr_fv4 = {0x28, 0xD6, 0x7B, 0x6E, 0x6, 0x0, 0x0, 0x21};
+DeviceAddress	m_tempAddr_fv5 = {0x28, 0x20, 0x83, 0x6E, 0x6, 0x0, 0x0, 0x79};
+	
 // TEMPERATURE SENSORS
 TempSensor tempSensor[9]; // Array holding all the temperature sensors (so that they can be read sequentially using a loop)
 
@@ -109,18 +130,18 @@ TempSensor * m_temp_fv3 = &tempSensor[6];
 TempSensor * m_temp_fv4 = &tempSensor[7];
 TempSensor * m_temp_fv5 = &tempSensor[8];
 
-
 // Known addresses of sensors
-uint8_t addr1[8] = {0x28, 0x52, 0x01, 0x6F, 0x6, 0x0, 0x0, 0x48};
-uint8_t addr2[8] = {0x28, 0xAF, 0x99, 0x6E, 0x6, 0x0, 0x0, 0x76};
-uint8_t addr3[8] = {0x28, 0xF0, 0x23, 0x6F, 0x6, 0x0, 0x0, 0x01};
-uint8_t addr11[8] = {0x28, 0x93, 0x31, 0x5D, 0x6, 0x0, 0x0, 0x2B};
-uint8_t addr12[8] = {0x28, 0xED, 0x3A, 0x5D, 0x6, 0x0, 0x0, 0xD0};
-uint8_t addr9[8] = {0x28, 0x9C, 0xDE, 0x6E, 0x6, 0x0, 0x0, 0x7A};
-uint8_t addr5[8] = {0x28, 0x81, 0x24, 0x6F, 0x6, 0x0, 0x0, 0xFF};
-uint8_t addr4[8] = {0x28, 0xD6, 0x7B, 0x6E, 0x6, 0x0, 0x0, 0x21};
-uint8_t addr8[8] = {0x28, 0x20, 0x83, 0x6E, 0x6, 0x0, 0x0, 0x79};
+//uint8_t addr1[8] = {0x28, 0x52, 0x01, 0x6F, 0x6, 0x0, 0x0, 0x48};
+//uint8_t addr2[8] = {0x28, 0xAF, 0x99, 0x6E, 0x6, 0x0, 0x0, 0x76};
+//uint8_t addr3[8] = {0x28, 0xF0, 0x23, 0x6F, 0x6, 0x0, 0x0, 0x01};
+//uint8_t addr11[8] = {0x28, 0x93, 0x31, 0x5D, 0x6, 0x0, 0x0, 0x2B};
+//uint8_t addr12[8] = {0x28, 0xED, 0x3A, 0x5D, 0x6, 0x0, 0x0, 0xD0};
+//uint8_t addr9[8] = {0x28, 0x9C, 0xDE, 0x6E, 0x6, 0x0, 0x0, 0x7A};
+//uint8_t addr5[8] = {0x28, 0x81, 0x24, 0x6F, 0x6, 0x0, 0x0, 0xFF};
+//uint8_t addr4[8] = {0x28, 0xD6, 0x7B, 0x6E, 0x6, 0x0, 0x0, 0x21};
+//uint8_t addr8[8] = {0x28, 0x20, 0x83, 0x6E, 0x6, 0x0, 0x0, 0x79};
 	
+
 // HEATING ELEMENTS
 HeatingElement c_boilElement1(23, 0);
 HeatingElement c_boilElement2(25, 1);
@@ -247,6 +268,15 @@ void setup() {
 	Serial.begin(9600);
 	delay(250);
 	
+	sensors.begin(); //start up temperature sensors.
+	
+
+	// set the resolution to 9 bit
+	sensors.setResolution(TEMPERATURE_PRECISION);
+	sensors.setWaitForConversion( false );
+
+	
+	
 	// PID setup
 	pidWindowStartTime = millis();
 	boilPIDSetpoint = 100;
@@ -264,31 +294,31 @@ void setup() {
 	
 	
 	// Initialize temperature sensors
-	m_temp_hlt->SetAddress( addr1 );
+	m_temp_hlt->SetAddress( m_tempAddr_hlt );
 	m_temp_hlt->SetName( "HLT" );
 	
-	m_temp_mash->SetAddress( addr2 );
+	m_temp_mash->SetAddress( m_tempAddr_mash );
 	m_temp_mash->SetName( "Mash" );
 	
-	m_temp_boil->SetAddress( addr3 );
+	m_temp_boil->SetAddress( m_tempAddr_boil );
 	m_temp_boil->SetName( "Boil" );
 	
-	m_temp_bb1->SetAddress( addr11 );
+	m_temp_bb1->SetAddress( m_tempAddr_bb1 );
 	m_temp_bb1->SetName( "BB1" );
 
-	m_temp_fv1->SetAddress( addr12 );
+	m_temp_fv1->SetAddress( m_tempAddr_fv1 );
 	m_temp_fv1->SetName( "FV1" );
 
-	m_temp_fv2->SetAddress( addr9 );
+	m_temp_fv2->SetAddress( m_tempAddr_fv2 );
 	m_temp_fv2->SetName( "FV2" );
 
-	m_temp_fv3->SetAddress( addr5 );
+	m_temp_fv3->SetAddress( m_tempAddr_fv3 );
 	m_temp_fv3->SetName( "FV3" );
 
-	m_temp_fv4->SetAddress( addr4 );
+	m_temp_fv4->SetAddress( m_tempAddr_fv4 );
 	m_temp_fv4->SetName( "FV4" );
 	
-	m_temp_fv5->SetAddress( addr8 );
+	m_temp_fv5->SetAddress( m_tempAddr_fv5 );
 	m_temp_fv5->SetName( "FV5" );
 	
 	
@@ -341,8 +371,8 @@ void setup() {
 	//Serial.print("server is at ");
 	//Serial.println(Ethernet.localIP());
 	
-	SetTempResolution( ds );
-	StartTempConversion();
+	//SetTempResolution( ds );
+	//StartTempConversion();
 }
 
 
@@ -1071,9 +1101,10 @@ void ISR_TempTimer( ){
 	Serial.println("ISR");
 	
 	if ( secondCounter == 0 ){
-		StartTempConversion();
+		sensors.requestTemperatures();
+		//StartTempConversion();
 		secondCounter ++;
-	} else if ( secondCounter == 1 ){
+	} else if ( secondCounter == 2 ){
 		readTemperatureSensorFlag = true;
 		secondCounter ++;
 	} else if ( secondCounter >= 7 ){
@@ -1082,20 +1113,16 @@ void ISR_TempTimer( ){
 		secondCounter ++;
 	}
 	
-	if( secondCounter%2 == 0 )
-	{
-		processFlag = true;
-	} else {
-		screenUpdateFlag = true; 
-	}
+	processFlag = true;
+	screenUpdateFlag = true; 
 }
 
-void StartTempConversion(){
-	ds.reset();
-	ds.skip(); // skip rom
-	ds.write(0x44); // sends a temp conversion command to all the sensors
-	Serial.println("Send Conversion");
-}
+//void StartTempConversion(){
+//	ds.reset();
+//	ds.skip(); // skip rom
+//	ds.write(0x44); // sends a temp conversion command to all the sensors
+//	Serial.println("Send Conversion");
+//}
 
 void populateRecipe(){
 	theGlobalRecipe.BoilSize = 200;
@@ -1112,7 +1139,7 @@ void populateRecipe(){
 }
 
 
-bool TempSensorPresent( TempSensor * sensor ){
+/*bool TempSensorPresent( TempSensor * sensor ){
 	byte i;
 	bool present = false;
 	
@@ -1138,7 +1165,7 @@ bool TempSensorPresent( TempSensor * sensor ){
 		}
 	}
 	return present;
-}
+}*/
 
 
 
@@ -1148,7 +1175,7 @@ void ReadTemperatureSensors(){
 	////Serial.println(" ");
 	////Serial.print("Number of Sensors: ");
 	////Serial.println(TempSensor::GetNumberOfSensors());
-			Serial.print("Temp Sensor read: ");
+	Serial.print("Temp Sensor read: ");
 			
 	for( i = 0; i <  TempSensor::GetNumberOfSensors(); i++ ){
 		//tempSensor[i].SetPresence( TempSensorPresent( &tempSensor[i]));
@@ -1173,6 +1200,25 @@ void ReadTemperatureSensors(){
 
 
 void UpdateTempSensor( TempSensor * sensor ){
+	byte addr[8];
+	sensor->GetAddress( addr );
+	
+	if ( sensors.isConnected( addr )) {
+		if( sensors.isConversionAvailable( addr ) ){
+			sensor->SetTemp( sensors.getTempC( addr ));
+			Serial.print(sensor->GetName());
+			Serial.print(": ");
+			Serial.print(sensor->GetTemp());
+			Serial.println("");
+		} else {
+			Serial.println( "conversion not ready ");
+		}
+	} else {
+		Serial.println( "sensor not connected ");
+	}
+
+
+	/*
 	byte i;
 	byte data[12];
 	byte addr[8];
@@ -1206,12 +1252,9 @@ void UpdateTempSensor( TempSensor * sensor ){
 		else if (cfg == 0x20) raw = raw & ~3; // 10 bit res, 187.5 ms
 		else if (cfg == 0x40) raw = raw & ~1; // 11 bit res, 375 ms
 		//// default is 12 bit resolution, 750 ms conversion time
-	}
-	sensor->SetTemp( (float)raw / 16.0 );
-        Serial.print(sensor->GetName());
-        Serial.print(": ");
-	Serial.print((float)raw / 16.0);
-        Serial.println("");
+	}*/
+	//sensor->SetTemp( (float)raw / 16.0 );
+       
 }
 
 
