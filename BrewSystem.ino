@@ -30,6 +30,7 @@ int m_hltWaterLevel = 0;
 #define k_hltMinWaterLevel 50
 int m_hltDesiredWaterLevel = 250;
 bool screenUpdateFlag = true;
+bool processFlag = false;
 
 typedef enum {
 	e_sysStatus_Standby,
@@ -1076,7 +1077,7 @@ void ISR_TempTimer( ){
 		readTemperatureSensorFlag = true;
 		secondCounter ++;
 	} else if ( secondCounter >= 7 ){
-		secondCounter == 0;
+		secondCounter = 0;
 	} else {
 		secondCounter ++;
 	}
@@ -1207,7 +1208,10 @@ void UpdateTempSensor( TempSensor * sensor ){
 		//// default is 12 bit resolution, 750 ms conversion time
 	}
 	sensor->SetTemp( (float)raw / 16.0 );
-	Serial.println((float)raw / 16.0);
+        Serial.print(sensor->GetName());
+        Serial.print(": ");
+	Serial.print((float)raw / 16.0);
+        Serial.println("");
 }
 
 
