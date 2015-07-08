@@ -1078,6 +1078,7 @@ void ISR_TempTimer( ){
 }
 
 void StartTempConversion(){
+	ds.reset();
 	ds.skip(); // skip rom
 	ds.write(0x44); // sends a temp conversion command to all the sensors
 }
@@ -1129,13 +1130,6 @@ bool TempSensorPresent( TempSensor * sensor ){
 
 void ReadTemperatureSensors(){
 	byte i;
-	byte present = 0;
-	byte type_s;
-	byte data[12];
-	byte addFound[8];
-	byte addKnown[8];
-	float celsius, fahrenheit;
-	bool found = false;
 	
 	////Serial.println(" ");
 	////Serial.print("Number of Sensors: ");
@@ -1169,8 +1163,7 @@ void UpdateTempSensor( TempSensor * sensor ){
 	byte data[12];
 	byte addr[8];
 	byte type_s;
-	float celsius;
-	
+
 	ds.reset();
 	sensor->GetAddress(addr);
 	ds.select( addr );
@@ -1192,7 +1185,7 @@ void UpdateTempSensor( TempSensor * sensor ){
 			// "count remain" gives full 12 bit resolution
 			raw = (raw & 0xFFF0) + 12 - data[6];
 		}
-		} else {
+	} else {
 		byte cfg = (data[4] & 0x60);
 		// at lower res, the low bits are undefined, so let's zero them
 		if (cfg == 0x00) raw = raw & ~7;  // 9 bit resolution, 93.75 ms
@@ -1200,11 +1193,7 @@ void UpdateTempSensor( TempSensor * sensor ){
 		else if (cfg == 0x40) raw = raw & ~1; // 11 bit res, 375 ms
 		//// default is 12 bit resolution, 750 ms conversion time
 	}
-	
-	celsius = (float)raw / 16.0;
-	sensor->SetTemp( celsius );
-	ds.reset();
-
+	sensor->SetTemp( (float)raw / 16.0 );
 }
 
 
