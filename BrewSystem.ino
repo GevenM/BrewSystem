@@ -628,10 +628,10 @@ void loop()
 		dataString += String(second()) + " " + String(day()) + "/" + String(month()) + "/" + String(year());
 		
 		// print item
-		dataString += "," + String(m_temp_mash->GetName()) ;
+		dataString += "," + String(m_temp_fv1->GetName()) ;
 		
 		// print value
-		dataString += "," + String(m_temp_mash->GetTemp());
+		dataString += "," + String(m_temp_fv1->GetTemp());
 	
 		// open file to log to
 		File logFile = SD.open("logFile.csv", FILE_WRITE );
@@ -653,7 +653,7 @@ void loop()
 	}
 	
 	// MAIN TIMER
-	if( timeStatus() == timeSet ){
+	if( timeStatus() != timeNotSet ){
         int fulltime = hour()*100 + minute();
         c_mainDisplay.println(fulltime);
 		c_mainDisplay.drawColon( true );
@@ -1052,7 +1052,11 @@ void InitDisplays(){
 void SetTempResolution( OneWire myds ) {
 	myds.reset();
 	myds.skip(); // skip rom
+	myds.write(0x4E);         // Write scratchpad
+	myds.write(0);            // TL
+	myds.write(0);            // TH
 	myds.write(0x3F);
+	myds.write(0x48);         // Copy Scratchpad
 }
 
 
@@ -1064,7 +1068,7 @@ void ISR_TempTimer( ){
 	} else if ( secondCounter == 1 ){
 		readTemperatureSensorFlag = true;
 		secondCounter ++;
-	} else if ( secondCounter == 10 ){
+	} else if ( secondCounter >= 3 ){
 		secondCounter == 0;
 	} else {
 		secondCounter ++;
@@ -1139,9 +1143,10 @@ void ReadTemperatureSensors(){
 	
 	for( i = 0; i <  TempSensor::GetNumberOfSensors(); i++ ){
 		
-		tempSensor[i].SetPresence( TempSensorPresent( &tempSensor[i]));
+		//tempSensor[i].SetPresence( TempSensorPresent( &tempSensor[i]));
 		
-		if ( tempSensor[i].IsPresent() ){
+		
+		//if ( tempSensor[i].IsPresent() ){
 			
 			UpdateTempSensor( &tempSensor[i] );
 			////Serial.print( tempSensor[i].GetName() );
@@ -1149,11 +1154,11 @@ void ReadTemperatureSensors(){
 			////Serial.print( tempSensor[i].GetTemp() );
 			////Serial.println(" Celcius.");
 
-			} else {
+		//	} else {
 			////Serial.print( tempSensor[i].GetName() );
 			////Serial.println(" NOT found" );
-			;
-		}
+		//	;
+		//}
 	}
 	return;
 }
