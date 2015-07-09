@@ -987,20 +987,25 @@ void loop()
 					client.println("Connnection: close");
 					client.println();
 					// open requested web page file
-					if (StrContains(HTTP_req, "GET / ")
-					|| StrContains(HTTP_req, "GET /index.htm")) {
-						webFile = SD.open("index.htm");        // open web page file
-					}
-					else if (StrContains(HTTP_req, "GET /logFile.csv")) {
-						webFile = SD.open("logFile.csv");        // open web page file
-					}
-					// send web page to client
-					if (webFile) {
-						while(webFile.available()) {
-							client.write(webFile.read());
+					if (StrContains(HTTP_req, "ajax_switch")) {
+						// read switch state and send appropriate paragraph text
+						GetAjaxData(client);
+					} else {
+						if (StrContains(HTTP_req, "GET / ") || StrContains(HTTP_req, "GET /index.htm")) {
+							webFile = SD.open("index.htm");        // open web page file
 						}
-						webFile.close();
+						else if (StrContains(HTTP_req, "GET /logFile.csv")) {
+							webFile = SD.open("logFile.csv");        // open web page file
+						}
+						// send web page to client
+						if (webFile) {
+							while(webFile.available()) {
+								client.write(webFile.read());
+							}
+							webFile.close();
+						}
 					}
+					
 					// reset buffer index and all buffer elements to 0
 					req_index = 0;
 					StrClear(HTTP_req, REQ_BUF_SZ);
@@ -1021,6 +1026,25 @@ void loop()
 		// close the connection:
 		client.stop();
 		////Serial.println("client disconnected");
+	}
+}
+
+// send the state of the switch to the web browser
+void GetAjaxData(EthernetClient cl)
+{
+	byte addr[8];
+	int i;
+	for( i = 0; i < TempSensor::GetNumberOfSensors() ; i++ ){
+		cl.print("<p>");
+		cl.print( tempSensor[i].GetName() );
+		cl.print(": ");
+		tempSensor[i].GetAddress( addr );
+		if ( sensors.isConnected( addr )){
+			cl.print( tempSensor[i].GetTemp() );
+		} else {
+			cl.print( "not connected");
+		}
+		cl.println("</p>");
 	}
 }
 
